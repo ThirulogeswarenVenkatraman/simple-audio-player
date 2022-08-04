@@ -1,11 +1,13 @@
 #include "smp.h"
 #include "animator.h"
-#include "AudioManager.h"
+#include "audiomanager.h"
 
 const int window_screen_x = 480;
 const int window_screen_y = 240;
 
 static const Uint8 *KeyStates = NULL;
+
+static SDL_Point mouse_pointer;
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
@@ -13,28 +15,21 @@ static SDL_Event evnt;
 
 static  Mix_Music* musi = NULL;
 
-static void throw_Error(const char *title, const char *errmsg) 
+void throw_Error(const char *title, const char *errmsg) 
 { 
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, errmsg, NULL);
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, errmsg, window);
+    FreeResources();
     exit(-1);
-
 }
 
-static int isKeyDown(SDL_Scancode key) {
-    if(KeyStates != 0) {
-        if(KeyStates[key] == 1) {
+int isKeyDown(SDL_Scancode key) {
+    if (KeyStates != 0) {
+        if (KeyStates[key] == 1) {
             return 1;
         }
         else { return 0; }
     }
     return 0;
-}
-
-static void KEUpdate() {
-    if(isKeyDown(SDL_SCANCODE_ESCAPE)) {
-        FreeResources();
-        exit(0);
-    }
 }
 
 SDL_bool InitSystem() {
@@ -62,7 +57,7 @@ SDL_bool InitSystem() {
         throw_Error("Device Failed", Mix_GetError());
     }
 
-    Mix_VolumeMusic(100);
+    Mix_VolumeMusic(120);
 
     // Load Audio
     musi = Mix_LoadMUS("Enemy.mp3");
@@ -71,12 +66,9 @@ SDL_bool InitSystem() {
     }
 
     // Play Music
-    if (Mix_PlayMusic(musi, 0)) {
-        throw_Error("Play Error", Mix_GetError());
-    }
-    
+    PlayMusic(musi, 0);
     // Loading Textures
-    Load_Texture("playpause.png", renderer);
+    INIT_Textures(renderer);
 
     return SDL_TRUE;
 }
@@ -90,24 +82,18 @@ void EvntHandler() {
                 break;
             }
             case SDL_KEYDOWN: {
-                KeyStates = SDL_GetKeyboardState(0);
-                PauseAUDIO();
+                KeyStates = SDL_GetKeyboardState(NULL);
                 break;
             }
             case SDL_MOUSEBUTTONDOWN: {
-                PauseAUDIO();
-            }
-            case SDL_MOUSEBUTTONUP: {
-
+                PlaynPause();
             }
             default: {
                 HoverFRAME(evnt);
+                break;
             }
         }
-        
     }
-    KEUpdate();
-    
 }
 
 void Render() {

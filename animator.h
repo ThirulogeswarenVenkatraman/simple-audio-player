@@ -14,10 +14,8 @@
 #define PXS_FRAME_TWO (SDL_Rect){ 16, 0, 16, 16 }
 #define PXS_FRAME_THR (SDL_Rect){ 32, 0, 16, 16 }
 
-void Load_Texture(const char* filename, SDL_Renderer* main_renderer);
-
+void INIT_Textures(SDL_Renderer* main_renderer);
 void Draw_Them(SDL_Renderer* main_renderer);
-
 void Free_Texture();
 
 void HoverFRAME(SDL_Event _evnt);
