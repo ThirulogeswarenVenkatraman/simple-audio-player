@@ -13,7 +13,7 @@ static SDL_Rect FO_Active;
 static SDL_Rect ST_Active;
 
 /* Textures */
-static SDL_Texture* rewind = NULL;
+static SDL_Texture* _rewind = NULL;
 static SDL_Texture* play = NULL;
 static SDL_Texture* forward = NULL;
 static SDL_Texture* stop = NULL;
