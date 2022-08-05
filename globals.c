@@ -8,5 +8,5 @@ int PX_SIZE = 16 * PIXEL_SCALE;
 const SDL_Rect rewindDest = { 20, 160, 16 * PIXEL_SCALE, 16 * PIXEL_SCALE };
 const SDL_Rect playDest = { 150, 160, 16 * PIXEL_SCALE, 16 * PIXEL_SCALE };
 const SDL_Rect forwardDest = { 190, 160, 16 * PIXEL_SCALE, 16 * PIXEL_SCALE };
-const SDL_Rect stopDest = { 240, 160, 16 * PIXEL_SCALE, 16 * PIXEL_SCALE };
+const SDL_Rect stopDest = { 240, 160, 16 * 3, 16 * 3 };
 

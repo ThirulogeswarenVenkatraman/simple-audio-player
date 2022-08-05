@@ -6,6 +6,8 @@
 
 void PlayMusic(Mix_Music* _music, int times);
 
-void PlaynPause();
+void PlaynPause(int byKey);
+
+void Stop(int byKey);
 
 #endif // !AUDIO_MANAGER_H

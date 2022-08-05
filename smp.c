@@ -15,6 +15,7 @@ static SDL_Event evnt;
 
 static  Mix_Music* musi = NULL;
 
+extern int music_state;
 void throw_Error(const char *title, const char *errmsg) 
 { 
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, errmsg, window);
@@ -37,7 +38,7 @@ SDL_bool InitSystem() {
         throw_Error("Init Failed", SDL_GetError());
     }
     window = SDL_CreateWindow("SMP", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-    window_screen_x, window_screen_y, 0);
+    window_screen_x, window_screen_y, SDL_WINDOW_INPUT_FOCUS);
 
     if(!window) {
         throw_Error("Window Failed", SDL_GetError());
@@ -60,7 +61,7 @@ SDL_bool InitSystem() {
     Mix_VolumeMusic(120);
 
     // Load Audio
-    musi = Mix_LoadMUS("Enemy.mp3");
+    musi = Mix_LoadMUS("keeper.mp3");
     if (!musi) {
         throw_Error("Invalid File", Mix_GetError());
     }
@@ -69,7 +70,7 @@ SDL_bool InitSystem() {
     PlayMusic(musi, 0);
     // Loading Textures
     INIT_Textures(renderer);
-
+    
     return SDL_TRUE;
 }
 
@@ -83,16 +84,29 @@ void EvntHandler() {
             }
             case SDL_KEYDOWN: {
                 KeyStates = SDL_GetKeyboardState(NULL);
+                if (isKeyDown(SDL_SCANCODE_AUDIOPLAY)) {
+                    PlaynPause(1);
+                }
+                if (isKeyDown(SDL_SCANCODE_AUDIOSTOP)) {
+                    Stop(1);
+                }
                 break;
             }
-            case SDL_MOUSEBUTTONDOWN: {
-                PlaynPause();
+            case SDL_MOUSEBUTTONDOWN:  {
+                if (evnt.button.button == SDL_BUTTON_LEFT) {
+                    PlaynPause(0);
+                    Stop(0);
+                }
             }
             default: {
                 HoverFRAME(evnt);
                 break;
             }
         }
+    }
+    if (isKeyDown(SDL_SCANCODE_ESCAPE)) {
+        FreeResources();
+        exit(0);
     }
 }
 

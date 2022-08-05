@@ -33,12 +33,13 @@ static SDL_Texture* Load_Textures(const char* filename, SDL_Renderer* main_rende
 
 void INIT_Textures(SDL_Renderer* main_renderer) {
 	play = Load_Textures("playpause.png", main_renderer);
+	stop = Load_Textures("stop.png", main_renderer);
 }
 
 
 void Draw_Them(SDL_Renderer *main_renderer) {
 	SDL_RenderCopy(main_renderer, play, &PL_Active, &playDest);
-	//SDL_RenderCopy(main_renderer, stop, &ST_Active, &stopDest);
+	SDL_RenderCopy(main_renderer, stop, &ST_Active, &stopDest);
 
 }
 
@@ -53,23 +54,40 @@ void HoverFRAME(SDL_Event _evnt) {
 	if (SDL_PointInRect(&mousepointer, &playDest)) { // hovering
 		if (music_state) {  
 			PL_Active = PX_FRAME_TWO;
-			if (_evnt.button.state == SDL_PRESSED) {
+			if (_evnt.button.state == SDL_PRESSED && 
+				_evnt.button.button == SDL_BUTTON_LEFT) {
 				PL_Active = PX_FRAME_THR;
 			}
-			else if(_evnt.button.state == SDL_RELEASED) {
+			else if(_evnt.button.state == SDL_RELEASED &&
+				_evnt.button.button == SDL_BUTTON_LEFT) {
 				PL_Active = PX_FRAME_TWO;
 			}
 		}
 		else {
 			PL_Active = PX_FRAME_FIV;
-			if (_evnt.button.state == SDL_PRESSED) {
+			if (_evnt.button.state == SDL_PRESSED &&
+				_evnt.button.button == SDL_BUTTON_LEFT) {
 				PL_Active = PX_FRAME_SIX;
 			}
-			else if (_evnt.button.state == SDL_RELEASED) {
+			else if (_evnt.button.state == SDL_RELEASED &&
+				_evnt.button.button == SDL_BUTTON_LEFT) {
 				PL_Active = PX_FRAME_FIV;
 			}
 		}
 
+	}
+	else if (SDL_PointInRect(&mousepointer, &stopDest)) {
+		ST_Active = PXS_FRAME_TWO;
+		if (_evnt.button.state == SDL_PRESSED &&
+			_evnt.button.button == SDL_BUTTON_LEFT) {
+			ST_Active = PXS_FRAME_THR;
+			PL_Active = PX_FRAME_FOU;
+		}
+		else if(_evnt.button.state == SDL_RELEASED &&
+			_evnt.button.button == SDL_BUTTON_LEFT)
+		{
+			ST_Active = PXS_FRAME_TWO;
+		}
 	}
 	else { /* Normal */
 		if (music_state) { // 1 when playing
@@ -78,6 +96,7 @@ void HoverFRAME(SDL_Event _evnt) {
 		else { // 0 if paused
 			PL_Active = PX_FRAME_FOU;
 		}
+		ST_Active = PXS_FRAME_ONE;
 	}
 }
 
