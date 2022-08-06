@@ -4,17 +4,19 @@ cmake_minimum_required(VERSION 3.1)
 project(simple-media-player LANGUAGES C)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
-include_directories($ENV{SDL_INCLUDE})
+
+
+include_directories(${CMAKE_SOURCE_DIR}/deps/includes)
 
 add_executable(smp main.c smp.c animator.c audiomanager.c globals.c)
 
 if(WIN32)
     message("linking for WINDOWS")
     target_link_libraries(smp 
-    $ENV{SDL_LIBS}/SDL2main.lib 
-    $ENV{SDL_LIBS}/SDL2.lib 
-    $ENV{SDL_LIBS}/SDL2_mixer.lib 
-    $ENV{SDL_LIBS}/SDL2_image.lib 
+    ${CMAKE_SOURCE_DIR}/deps/libs/SDL2main.lib
+    ${CMAKE_SOURCE_DIR}/deps/libs/SDL2.lib
+    ${CMAKE_SOURCE_DIR}/deps/libs/SDL2_mixer.lib 
+    ${CMAKE_SOURCE_DIR}/deps/libs/SDL2_image.lib
     )
 endif(WIN32)
 
