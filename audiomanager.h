@@ -15,8 +15,14 @@ typedef struct music {
 void InitAudioDevice();
 void DeinitAudioDevice();
 
+void LoadAudioFile(const char* filename);
+void FreeAudioIfAny();
+
 void PlaynPause(int byKey);
 
-void Stop(int byKey);
+void Forward(int byKey);
+
+/* linked list ig :) */
+void next_music();
 
 #endif // !AUDIO_MANAGER_H

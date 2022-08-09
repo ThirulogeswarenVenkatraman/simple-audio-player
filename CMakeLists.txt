@@ -8,7 +8,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 include_directories(${CMAKE_SOURCE_DIR}/deps/includes)
 
-add_executable(smp main.c smp.c animator.c audiomanager.c globals.c)
+add_executable(smp main.c smp.c animator.c audiomanager.c audioex.c globals.c)
 
 if(WIN32)
     message("linking for WINDOWS")

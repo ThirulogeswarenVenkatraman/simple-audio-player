@@ -5,15 +5,10 @@
 const int window_screen_x = 480;
 const int window_screen_y = 240;
 
-static const Uint8 *KeyStates = NULL;
-
-static SDL_Point mouse_pointer;
-
+/* Internals */
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_Event evnt;
-
-static  Mix_Music* musi = NULL;
 
 extern int music_state;
 void throw_Error(const char *title, const char *errmsg) 
@@ -23,6 +18,12 @@ void throw_Error(const char *title, const char *errmsg)
     exit(-1);
 }
 
+void throw_warning(const char *title, const char *errmsg) 
+{ 
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, errmsg, window);
+}
+
+static const Uint8 *KeyStates = NULL;
 int isKeyDown(SDL_Scancode key) {
     if (KeyStates != 0) {
         if (KeyStates[key] == 1) {
@@ -49,8 +50,10 @@ SDL_bool InitSystem() {
     if(!renderer) {
         throw_Error("Renderer Failed", SDL_GetError());
     }
+    /* Open Audio Device */
+    InitAudioDevice();
 
-    // Loading Textures
+    /* Loading Textures */
     Init_Textures(renderer);
     
     return SDL_TRUE;
@@ -64,23 +67,28 @@ void EvntHandler() {
                 exit(0);
                 break;
             }
+            case SDL_DROPFILE: {
+                LoadAudioFile(evnt.drop.file);
+                break;
+            }
             case SDL_KEYDOWN: {
                 KeyStates = SDL_GetKeyboardState(NULL);
                 if (isKeyDown(SDL_SCANCODE_AUDIOPLAY)) {
-                    
+                    PlaynPause(1);
                 }
-                if (isKeyDown(SDL_SCANCODE_AUDIOSTOP)) {
-
+                if (isKeyDown(SDL_SCANCODE_AUDIONEXT)) {
+                    Forward(1);
                 }
                 break;
             }
             case SDL_MOUSEBUTTONDOWN:  {
                 if (evnt.button.button == SDL_BUTTON_LEFT) {
-
+                    PlaynPause(0);
+                    Forward(0);
                 }
             }
             default: {
-                HoverFRAME(evnt);
+                currentFRAME(evnt);
                 break;
             }
         }
@@ -101,6 +109,7 @@ void Render() {
 
 void FreeResources() {
     Free_Texture();
+    FreeAudioIfAny();
     DeinitAudioDevice();
     SDL_DestroyRenderer(renderer);
     renderer = NULL;
