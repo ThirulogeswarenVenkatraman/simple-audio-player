@@ -50,26 +50,8 @@ SDL_bool InitSystem() {
         throw_Error("Renderer Failed", SDL_GetError());
     }
 
-    if (!Mix_Init(MIX_INIT_MP3)) { // return 0 on failure
-        throw_Error("Mixer Failed", Mix_GetError());
-    }
-
-    if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 4096)) {
-        throw_Error("Device Failed", Mix_GetError());
-    }
-
-    Mix_VolumeMusic(120);
-
-    // Load Audio
-    musi = Mix_LoadMUS("keeper.mp3");
-    if (!musi) {
-        throw_Error("Invalid File", Mix_GetError());
-    }
-
-    // Play Music
-    PlayMusic(musi, 0);
     // Loading Textures
-    INIT_Textures(renderer);
+    Init_Textures(renderer);
     
     return SDL_TRUE;
 }
@@ -85,17 +67,16 @@ void EvntHandler() {
             case SDL_KEYDOWN: {
                 KeyStates = SDL_GetKeyboardState(NULL);
                 if (isKeyDown(SDL_SCANCODE_AUDIOPLAY)) {
-                    PlaynPause(1);
+                    
                 }
                 if (isKeyDown(SDL_SCANCODE_AUDIOSTOP)) {
-                    Stop(1);
+
                 }
                 break;
             }
             case SDL_MOUSEBUTTONDOWN:  {
                 if (evnt.button.button == SDL_BUTTON_LEFT) {
-                    PlaynPause(0);
-                    Stop(0);
+
                 }
             }
             default: {
@@ -114,15 +95,13 @@ void Render() {
     
     SDL_SetRenderDrawColor(renderer, 139, 155, 180, 255);
     SDL_RenderClear(renderer);
-    Draw_Them(renderer);
+    Draw_Textures(renderer);
     SDL_RenderPresent(renderer);
 }
 
 void FreeResources() {
     Free_Texture();
-    Mix_FreeMusic(musi);
-    Mix_CloseAudio();
-    Mix_Quit();
+    DeinitAudioDevice();
     SDL_DestroyRenderer(renderer);
     renderer = NULL;
     SDL_DestroyWindow(window);

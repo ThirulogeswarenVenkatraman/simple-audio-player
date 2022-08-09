@@ -4,7 +4,16 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_mixer.h"
 
-void PlayMusic(Mix_Music* _music, int times);
+typedef struct music {
+    struct music* prev;
+    Mix_Music* _music;
+    const char* tile;
+    int mus_position;
+    struct music* next;
+} music_props;
+
+void InitAudioDevice();
+void DeinitAudioDevice();
 
 void PlaynPause(int byKey);
 

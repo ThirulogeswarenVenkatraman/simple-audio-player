@@ -31,7 +31,7 @@ static SDL_Texture* Load_Textures(const char* filename, SDL_Renderer* main_rende
 	return temp_texture;
 }
 
-void INIT_Textures(SDL_Renderer* main_renderer) {
+void Init_Textures(SDL_Renderer* main_renderer) {
 	play = Load_Textures("playpause.png", main_renderer);
 	stop = Load_Textures("stop.png", main_renderer);
 }
@@ -40,12 +40,13 @@ void INIT_Textures(SDL_Renderer* main_renderer) {
 void Draw_Them(SDL_Renderer *main_renderer) {
 	SDL_RenderCopy(main_renderer, play, &PL_Active, &playDest);
 	SDL_RenderCopy(main_renderer, stop, &ST_Active, &stopDest);
-
 }
 
 void Free_Texture() {
 	SDL_DestroyTexture(play);
 	play = NULL;
+	SDL_DestroyTexture(stop);
+	stop = NULL;
 }
 
 static SDL_Point mousepointer;
