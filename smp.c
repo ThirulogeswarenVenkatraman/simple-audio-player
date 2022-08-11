@@ -55,7 +55,7 @@ SDL_bool InitSystem() {
 
     /* Loading Textures */
     Init_Textures(renderer);
-    
+    SDL_Log("size of mix music -> %ld", sizeof(Mix_Music*));
     return SDL_TRUE;
 }
 
