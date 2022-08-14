@@ -7,7 +7,7 @@
 typedef struct music {
     struct music* prev;
     Mix_Music* _music;
-    const char* tile;
+    const char* title;
     int mus_position;
     struct music* next;
 } music_props;
@@ -20,9 +20,12 @@ void FreeAudioIfAny();
 
 void PlaynPause(int byKey);
 
-void Forward(int byKey);
-
 /* linked list ig :) */
-void next_music();
+SDL_bool isHeaderEmpty();
+void view_list();
+void load_music_atEnd(const char* filename);
+
+// play current music | forward button
+void current_next_music(int byKey);
 
 #endif // !AUDIO_MANAGER_H

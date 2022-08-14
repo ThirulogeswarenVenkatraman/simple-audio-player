@@ -68,7 +68,11 @@ void EvntHandler() {
                 break;
             }
             case SDL_DROPFILE: {
-                LoadAudioFile(evnt.drop.file);
+                if(isHeaderEmpty()){
+                    LoadAudioFile(evnt.drop.file);
+                }else {
+                    load_music_atEnd(evnt.drop.file);
+                }
                 break;
             }
             case SDL_KEYDOWN: {
@@ -77,14 +81,18 @@ void EvntHandler() {
                     PlaynPause(1);
                 }
                 if (isKeyDown(SDL_SCANCODE_AUDIONEXT)) {
-                    Forward(1);
+                    current_next_music(1);
+                }
+                if(isKeyDown(SDL_SCANCODE_E)){
+                    SDL_Log("list");
+                    view_list();
                 }
                 break;
             }
             case SDL_MOUSEBUTTONDOWN:  {
                 if (evnt.button.button == SDL_BUTTON_LEFT) {
                     PlaynPause(0);
-                    Forward(0);
+                    current_next_music(0);
                 }
             }
             default: {
@@ -93,6 +101,7 @@ void EvntHandler() {
             }
         }
     }
+    
     if (isKeyDown(SDL_SCANCODE_ESCAPE)) {
         FreeResources();
         exit(0);

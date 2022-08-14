@@ -9,6 +9,7 @@ extern void throw_Error(const char* title, const char* errmsg);
 /* Internals */
 static SDL_Point mousepointer;
 
+/* 1 -> Playing */
 int music_state = 1;
 
 static void setup_audio_device() {
@@ -38,14 +39,6 @@ void PlaynPause(int byKey) {
 			Mix_PauseMusic();
 			music_state = 0;
 		}
-	}
-}
-
-void Forward(int byKey) {
-	SDL_GetMouseState(&mousepointer.x, &mousepointer.y);
-	if (SDL_PointInRect(&mousepointer, &forwardDest) || byKey) {
-		SDL_Log("moving forward\n");
-		next_music();
 	}
 }
 

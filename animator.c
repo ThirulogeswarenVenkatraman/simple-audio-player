@@ -36,7 +36,6 @@ void Init_Textures(SDL_Renderer* main_renderer) {
 	forward = Load_Textures("forward.png", main_renderer);
 }
 
-
 void Draw_Textures(SDL_Renderer *main_renderer) {
 	SDL_RenderCopy(main_renderer, play, &PL_Active, &playDest);
 	SDL_RenderCopy(main_renderer, forward, &FO_Active, &forwardDest);
