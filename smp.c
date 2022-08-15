@@ -11,6 +11,7 @@ static SDL_Renderer *renderer = NULL;
 static SDL_Event evnt;
 
 extern int music_state;
+extern music_props* current;
 void throw_Error(const char *title, const char *errmsg) 
 { 
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, errmsg, window);
@@ -60,6 +61,7 @@ SDL_bool InitSystem() {
 }
 
 void EvntHandler() {
+    audioex_updator(); 
     while(SDL_PollEvent(&evnt)) {
         switch(evnt.type) {
             case SDL_QUIT: {
@@ -77,13 +79,21 @@ void EvntHandler() {
             }
             case SDL_KEYDOWN: {
                 KeyStates = SDL_GetKeyboardState(NULL);
+                if (isKeyDown(SDL_SCANCODE_ESCAPE)) {
+                    FreeResources();
+                    exit(0);
+                }
+                if(isKeyDown(SDL_SCANCODE_AUDIOREWIND)) {
+                    current_prev_music(1, evnt);
+                }
                 if (isKeyDown(SDL_SCANCODE_AUDIOPLAY)) {
                     PlaynPause(1);
                 }
                 if (isKeyDown(SDL_SCANCODE_AUDIONEXT)) {
                     current_next_music(1);
                 }
-                if(isKeyDown(SDL_SCANCODE_E)){
+                if(isKeyDown(SDL_SCANCODE_E)){  /* for DEBUGGING */
+                    SDL_Log("%d", Mix_PlayingMusic());
                     SDL_Log("list");
                     view_list();
                 }
@@ -91,6 +101,7 @@ void EvntHandler() {
             }
             case SDL_MOUSEBUTTONDOWN:  {
                 if (evnt.button.button == SDL_BUTTON_LEFT) {
+                    current_prev_music(0, evnt);
                     PlaynPause(0);
                     current_next_music(0);
                 }
@@ -100,12 +111,8 @@ void EvntHandler() {
                 break;
             }
         }
-    }
+    }  
     
-    if (isKeyDown(SDL_SCANCODE_ESCAPE)) {
-        FreeResources();
-        exit(0);
-    }
 }
 
 void Render() {

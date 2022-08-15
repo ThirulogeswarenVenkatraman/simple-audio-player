@@ -1,14 +1,18 @@
 #include "stdio.h"
 #include "audiomanager.h"
+#include "SDL2/SDL_filesystem.h"
 
 extern int music_state;
 extern SDL_Rect forwardDest;
+extern SDL_Rect rewindDest;
 
+static int once = 1;
 static SDL_Point mousepointer;
 static music_props* header = NULL;
-static music_props* current = NULL;
 static music_props* tempo = NULL;
 static music_props* new_node = NULL;
+
+music_props* current = NULL;
 
 /* plays the music upon button_state */
 static void play_now(Mix_Music* curr) { 
@@ -106,7 +110,7 @@ void view_list() {
 
 void load_music_atEnd(const char* filename) {
     tempo = header;
-    while(tempo->next != NULL) {
+    while(tempo->next != NULL) { /* points to last object*/ 
         tempo = tempo->next;
     }
     if(tempo->next == NULL) {
@@ -114,10 +118,11 @@ void load_music_atEnd(const char* filename) {
     }
 }
 
-/* points to the next object */
+/* points to the next object if any */
 void current_next_music(int byKey) {
     SDL_GetMouseState(&mousepointer.x, &mousepointer.y);
-    if(SDL_PointInRect(&mousepointer, &forwardDest) || byKey) {
+    if((SDL_PointInRect(&mousepointer, &forwardDest) || byKey) &&
+        header != NULL) {
         if(current->next != NULL) {
             current = current->next;
             play_now(current->_music);
@@ -127,3 +132,32 @@ void current_next_music(int byKey) {
     }
 }
 
+/* points to the previous object if any */
+void current_prev_music(int byKey, SDL_Event _evnt) {
+    SDL_GetMouseState(&mousepointer.x, &mousepointer.y);
+    if(SDL_PointInRect(&mousepointer, &rewindDest) || byKey) {
+        if(_evnt.button.clicks == 1) {
+            SDL_Log("Single TAP");
+            Mix_RewindMusic();
+        }
+        else if(_evnt.button.clicks > 1) {
+            SDL_Log("Double TAP");
+        }
+    }
+}
+
+void audioex_updator() {
+    if(!Mix_PlayingMusic()) {
+        if( current != NULL) {
+            if(current->next != NULL) {
+                current = current->next;
+                Mix_PlayMusic(current->_music, 0);
+            } else if(once) {
+                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
+                "Hungry", "Feed me Music...", NULL);
+                once = 0;
+            }
+        }
+    }
+          
+}

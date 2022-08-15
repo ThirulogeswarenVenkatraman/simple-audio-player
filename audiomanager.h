@@ -4,6 +4,8 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_mixer.h"
 
+void audioex_updator();
+
 typedef struct music {
     struct music* prev;
     Mix_Music* _music;
@@ -20,12 +22,14 @@ void FreeAudioIfAny();
 
 void PlaynPause(int byKey);
 
-/* linked list ig :) */
+/* DLL :) */
 SDL_bool isHeaderEmpty();
 void view_list();
 void load_music_atEnd(const char* filename);
 
-// play current music | forward button
+// play <previous as>current music | rewind button
+void current_prev_music(int byKey, SDL_Event _evnt);
+// play <next as>current music | forward button
 void current_next_music(int byKey);
 
 #endif // !AUDIO_MANAGER_H

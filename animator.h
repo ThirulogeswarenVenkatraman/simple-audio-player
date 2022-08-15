@@ -3,6 +3,11 @@
 
 #include  "SDL2/SDL.h"
 
+/* rewind */
+#define PXR_FRAME_ONE (SDL_Rect){ 0, 0, 22, 16 }
+#define PXR_FRAME_TWO (SDL_Rect){ 22, 0, 22, 16 }
+#define PXR_FRAME_THR (SDL_Rect){ 44, 0, 22, 16 }
+
 /* playnpause */
 #define PX_FRAME_ONE (SDL_Rect){ 0, 0, 16, 16 }
 #define PX_FRAME_TWO (SDL_Rect){ 16, 0, 16, 16 }
