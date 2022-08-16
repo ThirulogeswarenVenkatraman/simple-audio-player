@@ -1,6 +1,7 @@
 #include "smp.h"
 #include "animator.h"
 #include "audiomanager.h"
+#include "Windows.h"
 
 const int window_screen_x = 480;
 const int window_screen_y = 240;
@@ -9,19 +10,14 @@ const int window_screen_y = 240;
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_Event evnt;
+static HHOOK kbd;
 
-extern int music_state;
 extern music_props* current;
 void throw_Error(const char *title, const char *errmsg) 
 { 
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, errmsg, window);
     FreeResources();
     exit(-1);
-}
-
-void throw_warning(const char *title, const char *errmsg) 
-{ 
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, errmsg, window);
 }
 
 static const Uint8 *KeyStates = NULL;
@@ -35,12 +31,34 @@ int isKeyDown(SDL_Scancode key) {
     return 0;
 }
 
+LRESULT CALLBACK outMultiMediaKeys(int nCode, 
+WPARAM wParam, LPARAM lParam) {
+    KBDLLHOOKSTRUCT *mmkey = (KBDLLHOOKSTRUCT*)lParam;
+    switch(wParam){
+        case WM_KEYDOWN: {
+            if(mmkey->vkCode == VK_MEDIA_PREV_TRACK) {
+                current_prev_music(1, evnt);
+            }
+            if(mmkey->vkCode == VK_MEDIA_PLAY_PAUSE) {
+                current_play_n_pause(1);
+            }
+            if(mmkey->vkCode == VK_MEDIA_NEXT_TRACK) {
+                current_next_music(1);
+            }
+            break;
+        }
+        default: { currentFRAME(evnt); break;}
+    }
+
+    return CallNextHookEx(NULL, nCode, wParam, lParam);
+}
+
 SDL_bool InitSystem() {
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         throw_Error("Init Failed", SDL_GetError());
     }
     window = SDL_CreateWindow("SMP", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-    window_screen_x, window_screen_y, SDL_WINDOW_INPUT_FOCUS);
+    window_screen_x, window_screen_y, 0);
 
     if(!window) {
         throw_Error("Window Failed", SDL_GetError());
@@ -51,17 +69,19 @@ SDL_bool InitSystem() {
     if(!renderer) {
         throw_Error("Renderer Failed", SDL_GetError());
     }
+
+    kbd = SetWindowsHookEx(WH_KEYBOARD_LL, &outMultiMediaKeys, 0, 0);
     /* Open Audio Device */
     InitAudioDevice();
 
     /* Loading Textures */
     Init_Textures(renderer);
-    SDL_Log("size of mix music -> %ld", sizeof(Mix_Music*));
+    
     return SDL_TRUE;
 }
 
 void EvntHandler() {
-    audioex_updator(); 
+    audioex_updator();
     while(SDL_PollEvent(&evnt)) {
         switch(evnt.type) {
             case SDL_QUIT: {
@@ -71,7 +91,7 @@ void EvntHandler() {
             }
             case SDL_DROPFILE: {
                 if(isHeaderEmpty()){
-                    LoadAudioFile(evnt.drop.file);
+                    load_header(evnt.drop.file);
                 }else {
                     load_music_atEnd(evnt.drop.file);
                 }
@@ -83,27 +103,14 @@ void EvntHandler() {
                     FreeResources();
                     exit(0);
                 }
-                if(isKeyDown(SDL_SCANCODE_AUDIOREWIND)) {
-                    current_prev_music(1, evnt);
-                }
-                if (isKeyDown(SDL_SCANCODE_AUDIOPLAY)) {
-                    PlaynPause(1);
-                }
-                if (isKeyDown(SDL_SCANCODE_AUDIONEXT)) {
-                    current_next_music(1);
-                }
-                if(isKeyDown(SDL_SCANCODE_E)){  /* for DEBUGGING */
-                    SDL_Log("%d", Mix_PlayingMusic());
-                    SDL_Log("list");
-                    view_list();
-                }
                 break;
             }
             case SDL_MOUSEBUTTONDOWN:  {
                 if (evnt.button.button == SDL_BUTTON_LEFT) {
                     current_prev_music(0, evnt);
-                    PlaynPause(0);
+                    current_play_n_pause(0);
                     current_next_music(0);
+                    clear_audio_queue();
                 }
             }
             default: {
@@ -112,11 +119,9 @@ void EvntHandler() {
             }
         }
     }  
-    
 }
 
 void Render() {
-    
     SDL_SetRenderDrawColor(renderer, 139, 155, 180, 255);
     SDL_RenderClear(renderer);
     Draw_Textures(renderer);
@@ -124,8 +129,9 @@ void Render() {
 }
 
 void FreeResources() {
+    UnhookWindowsHookEx(kbd);
     Free_Texture();
-    FreeAudioIfAny();
+    FreeAudioQueue();
     DeinitAudioDevice();
     SDL_DestroyRenderer(renderer);
     renderer = NULL;

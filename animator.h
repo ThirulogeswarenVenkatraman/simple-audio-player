@@ -26,6 +26,11 @@
 #define PXS_FRAME_TWO (SDL_Rect){ 16, 0, 16, 16 }
 #define PXS_FRAME_THR (SDL_Rect){ 32, 0, 16, 16 }
 
+/* clear queue*/
+#define PXCQ_FRAME_ONE (SDL_Rect){ 0, 0, 69, 18 }
+#define PXCQ_FRAME_TWO (SDL_Rect){ 69, 0, 69, 18 }
+#define PXCQ_FRAME_THR (SDL_Rect){ 138, 0, 69, 18 }
+
 void Init_Textures(SDL_Renderer* main_renderer);
 void Draw_Textures(SDL_Renderer* main_renderer);
 void Free_Texture();

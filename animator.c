@@ -6,18 +6,21 @@ extern int music_state;
 extern SDL_Rect playDest;
 extern SDL_Rect forwardDest;
 extern SDL_Rect rewindDest;
+extern SDL_Rect cqDest;
 
 /* Active states */
 static SDL_Rect RW_Active;
 static SDL_Rect PL_Active;
 static SDL_Rect FO_Active;
 static SDL_Rect ST_Active;
+static SDL_Rect CQ_Active;
 
 /* Textures */
 static SDL_Texture* _rewind = NULL;
 static SDL_Texture* _play = NULL;
 static SDL_Texture* _forward = NULL;
 static SDL_Texture* _stop = NULL;
+static SDL_Texture* _clearqueue = NULL;
 
 extern void throw_Error(const char* title, const char* errmsg);
 
@@ -36,15 +39,19 @@ void Init_Textures(SDL_Renderer* main_renderer) {
 	_rewind = Load_Textures("rewind.png", main_renderer);
 	_play = Load_Textures("playpause.png", main_renderer);
 	_forward = Load_Textures("forward.png", main_renderer);
+	_clearqueue = Load_Textures("clearqueue.png", main_renderer);
 }
 
 void Draw_Textures(SDL_Renderer *main_renderer) {
 	SDL_RenderCopy(main_renderer, _play, &PL_Active, &playDest);
 	SDL_RenderCopy(main_renderer, _forward, &FO_Active, &forwardDest);
 	SDL_RenderCopy(main_renderer, _rewind, &RW_Active, &rewindDest);
+	SDL_RenderCopy(main_renderer, _clearqueue, &CQ_Active, &cqDest);
 }
 
 void Free_Texture() {
+	SDL_DestroyTexture(_clearqueue);
+	_clearqueue = NULL;
 	SDL_DestroyTexture(_rewind);
 	_rewind = NULL;
 	SDL_DestroyTexture(_forward);
@@ -56,7 +63,7 @@ void Free_Texture() {
 static SDL_Point mousepointer;
 void currentFRAME(SDL_Event _evnt) {
 	SDL_GetMouseState(&mousepointer.x, &mousepointer.y);
-	if (SDL_PointInRect(&mousepointer, &playDest)) {
+	if (SDL_PointInRect(&mousepointer, &playDest)) { /* play_n_pause */
 		if (music_state) {  
 			PL_Active = PX_FRAME_TWO;
 			if (_evnt.button.state == SDL_PRESSED && 
@@ -81,7 +88,7 @@ void currentFRAME(SDL_Event _evnt) {
 		}
 
 	}
-	else if (SDL_PointInRect(&mousepointer, &forwardDest)) {
+	else if (SDL_PointInRect(&mousepointer, &forwardDest)) { /* forward */
 		FO_Active = PXF_FRAME_TWO;
 		if (_evnt.button.state == SDL_PRESSED &&
 			_evnt.button.button == SDL_BUTTON_LEFT) {
@@ -93,7 +100,7 @@ void currentFRAME(SDL_Event _evnt) {
 			FO_Active = PXF_FRAME_TWO;
 		}
 	}
-	else if (SDL_PointInRect(&mousepointer, &rewindDest)) {
+	else if (SDL_PointInRect(&mousepointer, &rewindDest)) { /* rewind */
 		RW_Active = PXR_FRAME_TWO;
 		if (_evnt.button.state == SDL_PRESSED &&
 			_evnt.button.button == SDL_BUTTON_LEFT) {
@@ -105,6 +112,18 @@ void currentFRAME(SDL_Event _evnt) {
 			RW_Active = PXR_FRAME_TWO;
 		}
 	}
+	else if (SDL_PointInRect(&mousepointer, &cqDest)) { /* clear_queue */
+		CQ_Active = PXCQ_FRAME_TWO;
+		if (_evnt.button.state == SDL_PRESSED &&
+			_evnt.button.button == SDL_BUTTON_LEFT) {
+			CQ_Active = PXCQ_FRAME_THR;
+		}
+		else if(_evnt.button.state == SDL_RELEASED &&
+			_evnt.button.button == SDL_BUTTON_LEFT)
+		{
+			CQ_Active = PXCQ_FRAME_TWO;
+		}
+	}
 	else { /* Normal */
 		if (music_state) { // 1 when playing
 			PL_Active = PX_FRAME_ONE;
@@ -114,6 +133,7 @@ void currentFRAME(SDL_Event _evnt) {
 		}
 		FO_Active = PXF_FRAME_ONE;
 		RW_Active = PXR_FRAME_ONE;
+		CQ_Active = PXCQ_FRAME_ONE;
 	}
 }
 

@@ -1,7 +1,6 @@
-#ifndef SMP_H
+#ifndef SMP_H_
 #define SMP_H_
 
-#include <stdio.h>
 #include "SDL2/SDL.h"
 
 static SDL_bool state;

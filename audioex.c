@@ -1,4 +1,3 @@
-#include "stdio.h"
 #include "audiomanager.h"
 #include "SDL2/SDL_filesystem.h"
 
@@ -11,8 +10,8 @@ static SDL_Point mousepointer;
 static music_props* header = NULL;
 static music_props* tempo = NULL;
 static music_props* new_node = NULL;
-
-music_props* current = NULL;
+static music_props* next_addr = NULL;
+static music_props* current = NULL;
 
 /* plays the music upon button_state */
 static void play_now(Mix_Music* curr) { 
@@ -34,8 +33,14 @@ static void load_at_last(const char* filename) {
         }
         else {
             tempo = header;
-            new_node->title = Mix_GetMusicTitle(new_node->_music);
+            /* we want tempo to be the last item*/
+            while(tempo->next != NULL) { tempo = tempo->next; }
+            new_node->prev = tempo;
+            new_node->title = Mix_GetMusicArtistTag(new_node->_music);
+            if(SDL_strlen(new_node->title) == 0) 
+            { new_node->title = "album unknown"; }
             new_node->next = NULL;
+            tempo = header;
             while(tempo->next != NULL) {
                 tempo = tempo->next;
             }
@@ -53,12 +58,9 @@ static void load_at_last(const char* filename) {
 }
 
 SDL_bool isHeaderEmpty() {
-    if(header == NULL) {
-        return SDL_TRUE;
-    } else { return SDL_FALSE; }
-    //return header == NULL ? SDL_TRUE : SDL_FALSE;
+    return (header == NULL ? SDL_TRUE : SDL_FALSE);
 }
-void LoadAudioFile(const char* filename) {
+void load_header(const char* filename) {
 	/* Load some audio */
 	header = malloc(sizeof(music_props));
     if(header != NULL) {
@@ -69,7 +71,10 @@ void LoadAudioFile(const char* filename) {
         }
         else {
             header->prev = NULL;
-            header->title = Mix_GetMusicAlbumTag(header->_music);
+            header->title = NULL;
+            header->title = Mix_GetMusicArtistTag(header->_music);
+            if(SDL_strlen(header->title) == 0) 
+            { header->title = "album unknown"; }
             header->next = NULL;
             SDL_Log("Loading header -> %s", header->title);
             current = header;
@@ -79,19 +84,24 @@ void LoadAudioFile(const char* filename) {
    
 }
 
-void FreeAudioIfAny() {
+void FreeAudioQueue() {
     if(header != NULL) {  /* deallocate header */
-        music_props* next_addr = NULL;
-        SDL_Log("Freed Audio");
         tempo = header;
         while(tempo != NULL) {
-            Mix_FreeMusic(tempo->_music);
+            SDL_Log("Freed %s", tempo->title);
             next_addr = tempo->next;
+            Mix_FreeMusic(tempo->_music);
+            tempo->_music = NULL;
+            tempo->title = NULL;
             free(tempo);
             tempo = next_addr;
         }
+        tempo = NULL;
         header = NULL;
+        current = NULL;
+        SDL_Log("Freeing Audio");
     }
+    else { SDL_Log("Empty Queue"); }
 }
 
 void view_list() {
@@ -100,28 +110,20 @@ void view_list() {
         SDL_Log("empty");
     }
     else {
-        int i = 0;
         while(tempo != NULL) { /* visit every object */
-            printf("Title[%d]: %s\n", i, tempo->title);
-            tempo = tempo->next; i++;
+            tempo = tempo->next;
         }
     }
 }
 
 void load_music_atEnd(const char* filename) {
-    tempo = header;
-    while(tempo->next != NULL) { /* points to last object*/ 
-        tempo = tempo->next;
-    }
-    if(tempo->next == NULL) {
-        load_at_last(filename);
-    }
+    load_at_last(filename);
 }
 
 /* points to the next object if any */
 void current_next_music(int byKey) {
     SDL_GetMouseState(&mousepointer.x, &mousepointer.y);
-    if((SDL_PointInRect(&mousepointer, &forwardDest) || byKey) &&
+    if( (SDL_PointInRect(&mousepointer, &forwardDest) || byKey) &&
         header != NULL) {
         if(current->next != NULL) {
             current = current->next;
@@ -135,27 +137,32 @@ void current_next_music(int byKey) {
 /* points to the previous object if any */
 void current_prev_music(int byKey, SDL_Event _evnt) {
     SDL_GetMouseState(&mousepointer.x, &mousepointer.y);
-    if(SDL_PointInRect(&mousepointer, &rewindDest) || byKey) {
-        if(_evnt.button.clicks == 1) {
-            SDL_Log("Single TAP");
-            Mix_RewindMusic();
-        }
-        else if(_evnt.button.clicks > 1) {
-            SDL_Log("Double TAP");
+    if( (SDL_PointInRect(&mousepointer, &rewindDest) || byKey) && 
+        header != NULL) {
+        if(_evnt.button.clicks == 1 || byKey) {
+            if( (current != NULL) && (current->prev != NULL) ) {
+                current = current->prev;
+                play_now(current->_music);
+            }else {
+                SDL_Log("ur at the begining");
+            }
+            
         }
     }
 }
 
 void audioex_updator() {
-    if(!Mix_PlayingMusic()) {
-        if( current != NULL) {
-            if(current->next != NULL) {
-                current = current->next;
-                Mix_PlayMusic(current->_music, 0);
-            } else if(once) {
-                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
-                "Hungry", "Feed me Music...", NULL);
-                once = 0;
+    if(header != NULL) {
+        if(!Mix_PlayingMusic()) {
+            if( current != NULL) {
+                if(current->next != NULL) {
+                    current = current->next;
+                    Mix_PlayMusic(current->_music, 0);
+                } else if(once) {
+                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
+                    "Hungry", "Feed me Music...", NULL);
+                    once = 0;
+                }
             }
         }
     }
