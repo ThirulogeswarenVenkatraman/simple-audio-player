@@ -3,16 +3,18 @@
 #include "audiomanager.h"
 #include "Windows.h"
 
-const int window_screen_x = 480;
-const int window_screen_y = 240;
-
 /* Internals */
+static const int window_screen_x = 480;
+static const int window_screen_y = 240;
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_Event evnt;
+
+/* handle hook */
 static HHOOK kbd;
 
 extern music_props* current;
+extern void update_music_intels(int _dur);
 void throw_Error(const char *title, const char *errmsg) 
 { 
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, errmsg, window);
@@ -70,13 +72,18 @@ SDL_bool InitSystem() {
         throw_Error("Renderer Failed", SDL_GetError());
     }
 
+    if(TTF_Init()) {
+        throw_Error("TTF Failed", TTF_GetError());
+    }
     kbd = SetWindowsHookEx(WH_KEYBOARD_LL, &outMultiMediaKeys, 0, 0);
+    
     /* Open Audio Device */
     InitAudioDevice();
 
     /* Loading Textures */
     Init_Textures(renderer);
     
+    update_music_intels(0);
     return SDL_TRUE;
 }
 
@@ -130,9 +137,10 @@ void Render() {
 
 void FreeResources() {
     UnhookWindowsHookEx(kbd);
-    Free_Texture();
     FreeAudioQueue();
+    Free_Texture();
     DeinitAudioDevice();
+    TTF_Quit();
     SDL_DestroyRenderer(renderer);
     renderer = NULL;
     SDL_DestroyWindow(window);

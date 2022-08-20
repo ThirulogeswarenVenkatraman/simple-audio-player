@@ -17,9 +17,9 @@ if(WIN32)
     ${CMAKE_SOURCE_DIR}/deps/libs/SDL2.lib
     ${CMAKE_SOURCE_DIR}/deps/libs/SDL2_mixer.lib 
     ${CMAKE_SOURCE_DIR}/deps/libs/SDL2_image.lib
+    ${CMAKE_SOURCE_DIR}/deps/libs/SDL2_ttf.lib
     )
 endif(WIN32)
-
 
 if(UNIX)
     message("linking for UNIX")

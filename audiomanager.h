@@ -10,6 +10,7 @@ typedef struct music {
     struct music* prev;
     Mix_Music* _music;
     const char* title;
+    int mus_duration;
     struct music* next;
 } music_props;
 
