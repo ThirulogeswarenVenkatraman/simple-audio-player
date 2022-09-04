@@ -38,4 +38,17 @@ void currentFRAME(SDL_Event _evnt);
 
 #endif // !ANIMATOR_H
 
+#ifndef EXTERN_USE
+
+extern int music_state;
+extern const char* active_title;
+extern const SDL_Rect playDest;
+extern const SDL_Rect forwardDest;
+extern const SDL_Rect rewindDest;
+extern const SDL_Rect cqDest;
+extern const SDL_Rect barDest;
+
+#endif // EXTERN_USE
+
+
 

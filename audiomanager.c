@@ -2,9 +2,7 @@
 
 /* Externals */
 extern SDL_Rect playDest;
-extern SDL_Rect forwardDest;
 extern SDL_Rect cqDest;
-extern int isKeyDown(SDL_Scancode key);
 extern void throw_Error(const char* title, const char* errmsg);
 
 /* Internals */
@@ -25,7 +23,9 @@ static void setup_audio_device() {
 	
 }
 
-void InitAudioDevice() { setup_audio_device(); }
+void InitAudioDevice() {
+	setup_audio_device();
+}
 
 void current_play_n_pause(int byKey) {
 	SDL_GetMouseState(&mousepointer.x, &mousepointer.y);

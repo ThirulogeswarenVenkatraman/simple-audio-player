@@ -1,22 +1,6 @@
 #include "animator.h"
 
-/* External */
-extern int music_state;
-extern const char * m_title;
-extern const char * m_artist;
-extern const SDL_Rect playDest;
-extern const SDL_Rect forwardDest;
-extern const SDL_Rect rewindDest;
-extern const SDL_Rect cqDest;
-extern const SDL_Rect barDest;
-
-/* Active states */
-static SDL_Rect RW_Active;
-static SDL_Rect PL_Active;
-static SDL_Rect FO_Active;
-static SDL_Rect ST_Active;
-static SDL_Rect BAR_Active;
-static SDL_Rect CQ_Active;
+#define EXTERN_USE
 
 /* Textures */
 static SDL_Texture* _bar = NULL;
@@ -26,7 +10,7 @@ static SDL_Texture* _forward = NULL;
 static SDL_Texture* _stop = NULL;
 static SDL_Texture* _clearqueue = NULL;
 
-
+/* font_textures */
 static SDL_Texture* _fmus_duration = NULL;
 static SDL_Texture* _mus_intels = NULL;
 
@@ -79,9 +63,8 @@ static void load_the_music_intel(int _duration) {
 		SDL_DestroyTexture(_mus_intels); _mus_intels = NULL;
 	}
 	conv_to_min(_duration);
-	const char * mus_title = m_title;
 	SDL_Surface* temp_surf_duration = TTF_RenderText_Solid(fonty_music_dur, outdur, (SDL_Color){58, 68, 102, 255});
-	SDL_Surface* temp_surf_music_intel = TTF_RenderText_Solid(fonty_music_intel, mus_title, (SDL_Color){58, 68, 102, 255});
+	SDL_Surface* temp_surf_music_intel = TTF_RenderText_Solid(fonty_music_intel, active_title, (SDL_Color){58, 68, 102, 255});
 	/* destination */
 	mus_dur_Dest = (SDL_Rect){286, 136, temp_surf_duration->w, temp_surf_duration->h };
 	mus_intel_Dest = (SDL_Rect){30, 60, temp_surf_music_intel->w, temp_surf_music_intel->h };
@@ -105,13 +88,21 @@ void update_music_intels(int _dur) {
 	load_the_music_intel(_dur);
 }
 
+/* Active states */
+static SDL_Rect RW_Active;
+static SDL_Rect PL_Active;
+static SDL_Rect FO_Active;
+static SDL_Rect ST_Active;
+static SDL_Rect BAR_Active;
+static SDL_Rect CQ_Active;
+
 void Draw_Textures(SDL_Renderer *main_renderer) {
 	SDL_RenderCopy(main_renderer, _play, &PL_Active, &playDest);
 	SDL_RenderCopy(main_renderer, _forward, &FO_Active, &forwardDest);
 	SDL_RenderCopy(main_renderer, _rewind, &RW_Active, &rewindDest);
 	SDL_RenderCopy(main_renderer, _clearqueue, &CQ_Active, &cqDest);
 	SDL_RenderCopy(main_renderer, _bar, &BAR_Active, &barDest);
-	/* font*/
+	/* rendering fonts */
 	SDL_RenderCopy(main_renderer, _fmus_duration, NULL, &mus_dur_Dest);
 	SDL_RenderCopy(main_renderer, _mus_intels, NULL, &mus_intel_Dest);
 }
@@ -196,7 +187,7 @@ void currentFRAME(SDL_Event _evnt) {
 			_evnt.button.button == SDL_BUTTON_LEFT) {
 			CQ_Active = PXCQ_FRAME_THR;
 		}
-		else if(_evnt.button.state == SDL_RELEASED &&
+		else if (_evnt.button.state == SDL_RELEASED &&
 			_evnt.button.button == SDL_BUTTON_LEFT)
 		{
 			CQ_Active = PXCQ_FRAME_TWO;

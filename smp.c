@@ -1,7 +1,6 @@
 #include "smp.h"
 #include "animator.h"
 #include "audiomanager.h"
-#include "Windows.h"
 
 /* Internals */
 static const int window_screen_x = 480;
@@ -10,10 +9,6 @@ static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_Event evnt;
 
-/* handle hook */
-static HHOOK kbd;
-
-extern music_props* current;
 extern void update_music_intels(int _dur);
 void throw_Error(const char *title, const char *errmsg) 
 { 
@@ -21,6 +16,29 @@ void throw_Error(const char *title, const char *errmsg)
     FreeResources();
     exit(-1);
 }
+
+#ifdef WIN32
+LRESULT CALLBACK outMultiMediaKeys(int nCode, WPARAM wParam, LPARAM lParam) {
+    KBDLLHOOKSTRUCT* mmkey = (KBDLLHOOKSTRUCT*)lParam;
+    switch (wParam) {
+    case WM_KEYDOWN: {
+        if (mmkey->vkCode == VK_MEDIA_PREV_TRACK) {
+            current_prev_music(1, evnt);
+        }
+        if (mmkey->vkCode == VK_MEDIA_PLAY_PAUSE) {
+            current_play_n_pause(1);
+        }
+        if (mmkey->vkCode == VK_MEDIA_NEXT_TRACK) {
+            current_next_music(1);
+        }
+        break;
+    }
+    default: { currentFRAME(evnt); break; }
+    }
+
+    return CallNextHookEx(NULL, nCode, wParam, lParam);
+}
+#endif 
 
 static const Uint8 *KeyStates = NULL;
 int isKeyDown(SDL_Scancode key) {
@@ -31,28 +49,6 @@ int isKeyDown(SDL_Scancode key) {
         else { return 0; }
     }
     return 0;
-}
-
-LRESULT CALLBACK outMultiMediaKeys(int nCode, 
-WPARAM wParam, LPARAM lParam) {
-    KBDLLHOOKSTRUCT *mmkey = (KBDLLHOOKSTRUCT*)lParam;
-    switch(wParam){
-        case WM_KEYDOWN: {
-            if(mmkey->vkCode == VK_MEDIA_PREV_TRACK) {
-                current_prev_music(1, evnt);
-            }
-            if(mmkey->vkCode == VK_MEDIA_PLAY_PAUSE) {
-                current_play_n_pause(1);
-            }
-            if(mmkey->vkCode == VK_MEDIA_NEXT_TRACK) {
-                current_next_music(1);
-            }
-            break;
-        }
-        default: { currentFRAME(evnt); break;}
-    }
-
-    return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
 SDL_bool InitSystem() {
@@ -75,8 +71,10 @@ SDL_bool InitSystem() {
     if(TTF_Init()) {
         throw_Error("TTF Failed", TTF_GetError());
     }
+#ifdef WIN32
     kbd = SetWindowsHookEx(WH_KEYBOARD_LL, &outMultiMediaKeys, 0, 0);
-    
+#endif 
+
     /* Open Audio Device */
     InitAudioDevice();
 
@@ -99,9 +97,11 @@ void EvntHandler() {
             case SDL_DROPFILE: {
                 if(isHeaderEmpty()){
                     load_header(evnt.drop.file);
-                }else {
+                }
+                else {
                     load_music_atEnd(evnt.drop.file);
                 }
+                SDL_free(evnt.drop.file);
                 break;
             }
             case SDL_KEYDOWN: {
@@ -136,7 +136,9 @@ void Render() {
 }
 
 void FreeResources() {
+#ifndef WIN32
     UnhookWindowsHookEx(kbd);
+#endif 
     FreeAudioQueue();
     Free_Texture();
     DeinitAudioDevice();
@@ -148,3 +150,5 @@ void FreeResources() {
     SDL_Quit();
     SDL_Log("Resource Freed\n");
 }
+
+
