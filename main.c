@@ -1,4 +1,4 @@
-#include "smp.h"
+#include "include/smp.h"
 
 int main(int argc, char *argv[]) 
 {

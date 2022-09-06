@@ -1,6 +1,6 @@
-#include "animator.h"
+#include "include/animator.h"
 
-#define EXTERN_USE
+#define ANIMATION_EXTERN_USE
 
 /* Textures */
 static SDL_Texture* _bar = NULL;
@@ -14,15 +14,15 @@ static SDL_Texture* _clearqueue = NULL;
 static SDL_Texture* _fmus_duration = NULL;
 static SDL_Texture* _mus_intels = NULL;
 
+/* don't free it here */
 static SDL_Renderer* in_renderer = NULL;
-extern void throw_Error(const char* title, const char* errmsg);
 
-static SDL_Texture* temp_texture = NULL;
 static SDL_Texture* Load_Textures(const char* filename, SDL_Renderer* main_renderer) {
+	static SDL_Texture* temp_texture = NULL;
 	in_renderer = main_renderer;
 	SDL_Surface* temp_surface = IMG_Load(filename);
 	if (!temp_surface) {
-		throw_Error("Load Error", SDL_GetError());
+		throw_error("Load Error", SDL_GetError());
 	}
 	temp_texture = SDL_CreateTextureFromSurface(main_renderer, temp_surface);
 	SDL_FreeSurface(temp_surface);
@@ -31,14 +31,21 @@ static SDL_Texture* Load_Textures(const char* filename, SDL_Renderer* main_rende
 static char outdur[] = { '0', ':', '0', '0', '\0' };
 static void conv_to_min(int sec) {
 	outdur[0] = outdur[2] = outdur[3] = '0';
-	if(sec < 10 && sec != 0) { SDL_itoa(sec, &outdur[3], 10); }
+	if(sec < 10 && sec > 0) { SDL_itoa(sec, &outdur[3], 10); }
 	else if(sec > 10 && sec < 60) { SDL_itoa(sec, &outdur[2], 10); }
 	else if(sec >= 60) {
 		char temp_buffer[] = { '0', '0', '0', '\0' };
 		int min = (int)sec / 60; // 1 min
 		int afsec = sec - (min * 60); // 2 digits
 		SDL_itoa(min, &temp_buffer[0], 10);
-		SDL_itoa(afsec, &temp_buffer[1], 10);
+		if (afsec < 10) {
+			temp_buffer[1] = '0';
+			SDL_itoa(afsec, &temp_buffer[2], 10);
+		}
+		else {
+			SDL_itoa(afsec, &temp_buffer[1], 10);
+		}
+		
 		outdur[0] = temp_buffer[0];
 		outdur[2] = temp_buffer[1];
 		outdur[3] = temp_buffer[2];
@@ -51,14 +58,14 @@ static void load_the_fonts(const char* filename) {
 	fonty_music_dur = TTF_OpenFont(filename, 16);
 	fonty_music_intel = TTF_OpenFont(filename, 23);
 	if(!(fonty_music_dur || fonty_music_intel)) {
-		throw_Error("invalid font", TTF_GetError());
+		throw_error("invalid font", TTF_GetError());
 	}
 }
 
 
 static SDL_Rect mus_dur_Dest; static SDL_Rect mus_intel_Dest;
 static void load_the_music_intel(int _duration) {
-	if((_fmus_duration != NULL) && (_mus_intels != NULL)) {
+	if ((_fmus_duration != NULL) && (_mus_intels != NULL)) {
 		SDL_DestroyTexture(_fmus_duration); _fmus_duration = NULL;
 		SDL_DestroyTexture(_mus_intels); _mus_intels = NULL;
 	}
@@ -72,7 +79,9 @@ static void load_the_music_intel(int _duration) {
 	_fmus_duration = SDL_CreateTextureFromSurface(in_renderer, temp_surf_duration);
 	_mus_intels = SDL_CreateTextureFromSurface(in_renderer, temp_surf_music_intel);
 	SDL_FreeSurface(temp_surf_duration);
+	temp_surf_duration = NULL;
 	SDL_FreeSurface(temp_surf_music_intel);
+	temp_surf_music_intel = NULL;
 }
 
 void Init_Textures(SDL_Renderer* main_renderer) {
@@ -82,6 +91,7 @@ void Init_Textures(SDL_Renderer* main_renderer) {
 	_forward = Load_Textures("assets/forward.png", main_renderer);
 	_clearqueue = Load_Textures("assets/clearqueue.png", main_renderer);
 	_bar = Load_Textures("assets/bar.png", main_renderer);
+	load_the_music_intel(0);
 }
 
 void update_music_intels(int _dur) {
@@ -96,7 +106,7 @@ static SDL_Rect ST_Active;
 static SDL_Rect BAR_Active;
 static SDL_Rect CQ_Active;
 
-void Draw_Textures(SDL_Renderer *main_renderer) {
+void Draw_Textures(SDL_Renderer *main_renderer) { /* Render it */
 	SDL_RenderCopy(main_renderer, _play, &PL_Active, &playDest);
 	SDL_RenderCopy(main_renderer, _forward, &FO_Active, &forwardDest);
 	SDL_RenderCopy(main_renderer, _rewind, &RW_Active, &rewindDest);
@@ -126,20 +136,20 @@ void Free_Texture() {
 	fonty_music_intel = NULL;
 	TTF_CloseFont(fonty_music_dur);
 	fonty_music_dur = NULL;
-	SDL_DestroyRenderer(in_renderer);
+	in_renderer = NULL;
 }
 
 static SDL_Point mousepointer;
-void currentFRAME(SDL_Event _evnt) {
+void animate_frames(SDL_Event _evnt) {
 	SDL_GetMouseState(&mousepointer.x, &mousepointer.y);
 	if (SDL_PointInRect(&mousepointer, &playDest)) { /* play_n_pause */
-		if (music_state) {  
+		if (music_state) {
 			PL_Active = PX_FRAME_TWO;
-			if (_evnt.button.state == SDL_PRESSED && 
+			if (_evnt.button.state == SDL_PRESSED &&
 				_evnt.button.button == SDL_BUTTON_LEFT) {
 				PL_Active = PX_FRAME_THR;
 			}
-			else if(_evnt.button.state == SDL_RELEASED &&
+			else if (_evnt.button.state == SDL_RELEASED &&
 				_evnt.button.button == SDL_BUTTON_LEFT) {
 				PL_Active = PX_FRAME_TWO;
 			}
@@ -163,7 +173,7 @@ void currentFRAME(SDL_Event _evnt) {
 			_evnt.button.button == SDL_BUTTON_LEFT) {
 			FO_Active = PXF_FRAME_THR;
 		}
-		else if(_evnt.button.state == SDL_RELEASED &&
+		else if (_evnt.button.state == SDL_RELEASED &&
 			_evnt.button.button == SDL_BUTTON_LEFT)
 		{
 			FO_Active = PXF_FRAME_TWO;
@@ -175,7 +185,7 @@ void currentFRAME(SDL_Event _evnt) {
 			_evnt.button.button == SDL_BUTTON_LEFT) {
 			RW_Active = PXR_FRAME_THR;
 		}
-		else if(_evnt.button.state == SDL_RELEASED &&
+		else if (_evnt.button.state == SDL_RELEASED &&
 			_evnt.button.button == SDL_BUTTON_LEFT)
 		{
 			RW_Active = PXR_FRAME_TWO;

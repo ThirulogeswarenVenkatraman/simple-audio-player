@@ -1,21 +1,17 @@
-#include "smp.h"
-#include "animator.h"
-#include "audiomanager.h"
+#include "include/smp.h"
+#include "include/animator.h"
+#include "include/audiomanager.h"
 
-/* Internals */
-static const int window_screen_x = 480;
-static const int window_screen_y = 240;
+/* window props */
+#define WINDOW_SCREEN_X 480
+#define WINDOW_SCREEN_Y 240
+
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_Event evnt;
 
-extern void update_music_intels(int _dur);
-void throw_Error(const char *title, const char *errmsg) 
-{ 
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, errmsg, window);
-    FreeResources();
-    exit(-1);
-}
+void throw_error(const char* title, const char* errmsg);
+void throw_warning(const char* title, const char* errmsg);
 
 #ifdef WIN32
 LRESULT CALLBACK outMultiMediaKeys(int nCode, WPARAM wParam, LPARAM lParam) {
@@ -33,7 +29,7 @@ LRESULT CALLBACK outMultiMediaKeys(int nCode, WPARAM wParam, LPARAM lParam) {
         }
         break;
     }
-    default: { currentFRAME(evnt); break; }
+    default: { animate_frames(evnt); break; }
     }
 
     return CallNextHookEx(NULL, nCode, wParam, lParam);
@@ -53,23 +49,23 @@ int isKeyDown(SDL_Scancode key) {
 
 SDL_bool InitSystem() {
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
-        throw_Error("Init Failed", SDL_GetError());
+        throw_error("Init Failed", SDL_GetError());
     }
     window = SDL_CreateWindow("SMP", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-    window_screen_x, window_screen_y, 0);
+    WINDOW_SCREEN_X, WINDOW_SCREEN_Y, 0);
 
     if(!window) {
-        throw_Error("Window Failed", SDL_GetError());
+        throw_error("Window Failed", SDL_GetError());
     }
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
     if(!renderer) {
-        throw_Error("Renderer Failed", SDL_GetError());
+        throw_error("Renderer Failed", SDL_GetError());
     }
 
-    if(TTF_Init()) {
-        throw_Error("TTF Failed", TTF_GetError());
+    if(TTF_Init()) { /* returns 0 on success */
+        throw_error("TTF Failed", TTF_GetError());
     }
 #ifdef WIN32
     kbd = SetWindowsHookEx(WH_KEYBOARD_LL, &outMultiMediaKeys, 0, 0);
@@ -81,12 +77,10 @@ SDL_bool InitSystem() {
     /* Loading Textures */
     Init_Textures(renderer);
     
-    update_music_intels(0);
     return SDL_TRUE;
 }
 
 void EvntHandler() {
-    audioex_updator();
     while(SDL_PollEvent(&evnt)) {
         switch(evnt.type) {
             case SDL_QUIT: {
@@ -99,7 +93,7 @@ void EvntHandler() {
                     load_header(evnt.drop.file);
                 }
                 else {
-                    load_music_atEnd(evnt.drop.file);
+                    load_at_last(evnt.drop.file);
                 }
                 SDL_free(evnt.drop.file);
                 break;
@@ -121,25 +115,28 @@ void EvntHandler() {
                 }
             }
             default: {
-                currentFRAME(evnt);
+                animate_frames(evnt);
                 break;
             }
         }
     }  
+    audioex_updator();
 }
 
 void Render() {
     SDL_SetRenderDrawColor(renderer, 139, 155, 180, 255);
     SDL_RenderClear(renderer);
+    /* draw here */
     Draw_Textures(renderer);
+    
+    //----------//
     SDL_RenderPresent(renderer);
 }
 
 void FreeResources() {
-#ifndef WIN32
+#ifdef WIN32
     UnhookWindowsHookEx(kbd);
 #endif 
-    FreeAudioQueue();
     Free_Texture();
     DeinitAudioDevice();
     TTF_Quit();
@@ -151,4 +148,12 @@ void FreeResources() {
     SDL_Log("Resource Freed\n");
 }
 
+void throw_error(const char* title, const char* errmsg) {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, errmsg, window);
+    FreeResources();
+    exit(-1);
+}
 
+void throw_warning(const char* title, const char* errmsg) {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, title, errmsg, window);
+}
