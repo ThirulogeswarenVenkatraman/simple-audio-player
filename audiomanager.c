@@ -1,12 +1,10 @@
 #include "include/audiomanager.h"
 
+#define AUDIO_EX_H
+
 /* Externals */
 extern SDL_Rect playDest;
 extern SDL_Rect cqDest;
-extern void throw_error(const char* title, const char* errmsg);
-
-/* Internals */
-static SDL_Point mousepointer;
 
 /* 1 -> Playing */
 int music_state = 1;
@@ -20,7 +18,7 @@ static void setup_audio_device() {
 		throw_error("Device Failed", Mix_GetError());
     }
 	SDL_Log("Audio Device opened");
-	
+	Mix_VolumeMusic(MIX_MAX_VOLUME);
 }
 
 void InitAudioDevice() {
@@ -31,12 +29,12 @@ void current_play_n_pause(int byKey) {
 	SDL_GetMouseState(&mousepointer.x, &mousepointer.y);
 	if (SDL_PointInRect(&mousepointer, &playDest) || byKey) {
 		if (!music_state) {
-			SDL_Log("Resumed\n");
+			/* Resume */
 			Mix_ResumeMusic();
 			music_state = 1;
 		}
 		else {
-			SDL_Log("Paused\n");
+			/* Pause It */
 			Mix_PauseMusic();
 			music_state = 0;
 		}
@@ -47,7 +45,6 @@ void clear_audio_queue() {
 	SDL_GetMouseState(&mousepointer.x, &mousepointer.y);
 	if (SDL_PointInRect(&mousepointer, &cqDest)) {
 		FreeAudioQueue();
-		SDL_Log("freed");
 	}
 }
 

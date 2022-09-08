@@ -19,7 +19,7 @@ LRESULT CALLBACK outMultiMediaKeys(int nCode, WPARAM wParam, LPARAM lParam) {
     switch (wParam) {
     case WM_KEYDOWN: {
         if (mmkey->vkCode == VK_MEDIA_PREV_TRACK) {
-            current_prev_music(1, evnt);
+            current_prev_music(1);
         }
         if (mmkey->vkCode == VK_MEDIA_PLAY_PAUSE) {
             current_play_n_pause(1);
@@ -108,7 +108,7 @@ void EvntHandler() {
             }
             case SDL_MOUSEBUTTONDOWN:  {
                 if (evnt.button.button == SDL_BUTTON_LEFT) {
-                    current_prev_music(0, evnt);
+                    current_prev_music(0);
                     current_play_n_pause(0);
                     current_next_music(0);
                     clear_audio_queue();
