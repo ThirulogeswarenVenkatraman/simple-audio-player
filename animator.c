@@ -1,6 +1,8 @@
 #include "include/animator.h"
+#include "SDL2/SDL_mixer.h"
 
 #define ANIMATION_EXTERN_USE
+#define _BAR_LIMIT 243
 
 /* Textures */
 static SDL_Texture* _bar = NULL;
@@ -10,9 +12,13 @@ static SDL_Texture* _forward = NULL;
 static SDL_Texture* _stop = NULL;
 static SDL_Texture* _clearqueue = NULL;
 
-/* font_textures */
+/* font textures */
 static SDL_Texture* _fmus_duration = NULL;
 static SDL_Texture* _mus_intels = NULL;
+
+/* music bar */
+extern float _dynamic_pos;
+static SDL_FRect _music_bar = { 31.0f, 143.0f, 243.0f, 4.0f };
 
 /* don't free it here */
 static SDL_Renderer* in_renderer = NULL;
@@ -115,6 +121,13 @@ void Draw_Textures(SDL_Renderer *main_renderer) { /* Render it */
 	/* rendering fonts */
 	SDL_RenderCopy(main_renderer, _fmus_duration, NULL, &mus_dur_Dest);
 	SDL_RenderCopy(main_renderer, _mus_intels, NULL, &mus_intel_Dest);
+	/* music bar */
+	SDL_SetRenderDrawColor(main_renderer, 58, 68, 102, 255);
+	SDL_RenderFillRectF(main_renderer, &_music_bar);
+	/* update */
+
+	_music_bar.w = _dynamic_pos;
+	//-------//
 }
 
 void Free_Texture() {

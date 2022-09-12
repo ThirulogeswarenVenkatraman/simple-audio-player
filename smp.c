@@ -8,6 +8,7 @@
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
+static const Uint8* KeyStates = NULL;
 static SDL_Event evnt;
 
 void throw_error(const char* title, const char* errmsg);
@@ -36,7 +37,6 @@ LRESULT CALLBACK outMultiMediaKeys(int nCode, WPARAM wParam, LPARAM lParam) {
 }
 #endif 
 
-static const Uint8 *KeyStates = NULL;
 int isKeyDown(SDL_Scancode key) {
     if (KeyStates != 0) {
         if (KeyStates[key] == 1) {

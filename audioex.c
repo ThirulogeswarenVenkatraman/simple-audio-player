@@ -5,7 +5,7 @@
 
 #ifdef WIN32
 #define c_strdup _strdup
-#elif __linux
+#else
 #define c_strdup strdup
 #endif /* native call */
 
@@ -22,6 +22,7 @@ static music_props* next_addr = NULL;
 
 /* export */
 const char* active_title = "Empty Queue";
+float _dynamic_pos = 0.0f;
 
 /* plays the music upon button_state */
 static void play_now(Mix_Music* curr) { 
@@ -162,6 +163,9 @@ void current_next_music(int byKey) {
 }
 
 void audioex_updator() {
+    if (current) {
+        _dynamic_pos = (float)Mix_GetMusicPosition(current->_music);
+    }
     if (header != NULL) {
         if (!Mix_PlayingMusic()) {
             /* if any music is loaded -> PLAY IT */
