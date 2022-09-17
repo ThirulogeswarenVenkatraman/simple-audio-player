@@ -5,6 +5,7 @@ int main(int argc, char *argv[])
     state = InitSystem();
     while(state) {
         EvntHandler();
+        Update();
         Render();
     }
     FreeResources();

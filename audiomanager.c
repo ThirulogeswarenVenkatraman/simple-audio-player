@@ -1,6 +1,7 @@
 #include "include/audiomanager.h"
 
-#define AUDIO_EX_H
+#define _ERROR_H
+#include "include/globals.h"
 
 /* Externals */
 extern SDL_Rect playDest;
@@ -9,6 +10,8 @@ extern SDL_Rect cqDest;
 /* 1 -> Playing */
 int music_state = 1;
 
+// for getting the mouse position 
+static SDL_Point mousepointer;
 static void setup_audio_device() {
     if (!Mix_Init(MIX_INIT_MP3)) { // returns 0 on failure
 		throw_error("Mixer Failed", Mix_GetError());
@@ -49,7 +52,7 @@ void clear_audio_queue() {
 }
 
 void DeinitAudioDevice() {
-	FreeAudioQueue();
+	//FreeAudioQueue();
 	Mix_CloseAudio();
 	Mix_Quit();
 }

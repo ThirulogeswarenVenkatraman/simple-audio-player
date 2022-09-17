@@ -1,8 +1,10 @@
 #include "include/animator.h"
 #include "SDL2/SDL_mixer.h"
 
-#define ANIMATION_EXTERN_USE
-#define _BAR_LIMIT 243
+#define _FRAME_H
+#define _ERROR_H
+#define _DEST_RECTS_H
+#include "include/globals.h"
 
 /* Textures */
 static SDL_Texture* _bar = NULL;
@@ -17,8 +19,7 @@ static SDL_Texture* _fmus_duration = NULL;
 static SDL_Texture* _mus_intels = NULL;
 
 /* music bar */
-extern float _dynamic_pos;
-static SDL_FRect _music_bar = { 31.0f, 143.0f, 243.0f, 4.0f };
+SDL_FRect _music_bar = { 31.0f, 143.0f, 0.0f, 4.0f };
 
 /* don't free it here */
 static SDL_Renderer* in_renderer = NULL;
@@ -124,10 +125,6 @@ void Draw_Textures(SDL_Renderer *main_renderer) { /* Render it */
 	/* music bar */
 	SDL_SetRenderDrawColor(main_renderer, 58, 68, 102, 255);
 	SDL_RenderFillRectF(main_renderer, &_music_bar);
-	/* update */
-
-	_music_bar.w = _dynamic_pos;
-	//-------//
 }
 
 void Free_Texture() {
@@ -153,7 +150,7 @@ void Free_Texture() {
 }
 
 static SDL_Point mousepointer;
-void animate_frames(SDL_Event _evnt) {
+void animation_state(SDL_Event _evnt) {
 	SDL_GetMouseState(&mousepointer.x, &mousepointer.y);
 	if (SDL_PointInRect(&mousepointer, &playDest)) { /* play_n_pause */
 		if (music_state) {
@@ -228,6 +225,7 @@ void animate_frames(SDL_Event _evnt) {
 		CQ_Active = PXCQ_FRAME_ONE;
 		BAR_Active = PXBAR_FRAME_ONE;
 	}
+
 }
 
 

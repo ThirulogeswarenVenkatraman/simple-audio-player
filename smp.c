@@ -18,19 +18,18 @@ void throw_warning(const char* title, const char* errmsg);
 LRESULT CALLBACK outMultiMediaKeys(int nCode, WPARAM wParam, LPARAM lParam) {
     KBDLLHOOKSTRUCT* mmkey = (KBDLLHOOKSTRUCT*)lParam;
     switch (wParam) {
-    case WM_KEYDOWN: {
-        if (mmkey->vkCode == VK_MEDIA_PREV_TRACK) {
-            current_prev_music(1);
+        case WM_KEYDOWN: {
+            if (mmkey->vkCode == VK_MEDIA_PREV_TRACK) {
+                current_prev_music(1);
+            }
+            if (mmkey->vkCode == VK_MEDIA_PLAY_PAUSE) {
+                current_play_n_pause(1);
+            }
+            if (mmkey->vkCode == VK_MEDIA_NEXT_TRACK) {
+                current_next_music(1);
+            }
+            break;
         }
-        if (mmkey->vkCode == VK_MEDIA_PLAY_PAUSE) {
-            current_play_n_pause(1);
-        }
-        if (mmkey->vkCode == VK_MEDIA_NEXT_TRACK) {
-            current_next_music(1);
-        }
-        break;
-    }
-    default: { animate_frames(evnt); break; }
     }
 
     return CallNextHookEx(NULL, nCode, wParam, lParam);
@@ -47,6 +46,18 @@ int isKeyDown(SDL_Scancode key) {
     return 0;
 }
 
+static void set_win_icon() {
+    SDL_Surface* win_icon = NULL;
+    win_icon = IMG_Load("assets/icon.png");
+    if (!win_icon) {
+        throw_error("Load Error", SDL_GetError());
+    }
+    SDL_SetWindowIcon(window, win_icon);
+    SDL_FreeSurface(win_icon);
+    win_icon = NULL;
+    
+}
+
 SDL_bool InitSystem() {
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         throw_error("Init Failed", SDL_GetError());
@@ -57,13 +68,13 @@ SDL_bool InitSystem() {
     if(!window) {
         throw_error("Window Failed", SDL_GetError());
     }
-
+    set_win_icon();
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
     if(!renderer) {
         throw_error("Renderer Failed", SDL_GetError());
     }
-
+    
     if(TTF_Init()) { /* returns 0 on success */
         throw_error("TTF Failed", TTF_GetError());
     }
@@ -80,16 +91,24 @@ SDL_bool InitSystem() {
     return SDL_TRUE;
 }
 
+void Update() {
+    audioex_updator();
+    if (isKeyDown(SDL_SCANCODE_ESCAPE)) {
+        FreeResources();
+        exit(0);
+    }
+}
+
 void EvntHandler() {
-    while(SDL_PollEvent(&evnt)) {
-        switch(evnt.type) {
+    while (SDL_PollEvent(&evnt)) {
+        switch (evnt.type) {
             case SDL_QUIT: {
                 FreeResources();
                 exit(0);
                 break;
             }
             case SDL_DROPFILE: {
-                if(isHeaderEmpty()){
+                if (isHeaderEmpty()) {
                     load_header(evnt.drop.file);
                 }
                 else {
@@ -100,13 +119,9 @@ void EvntHandler() {
             }
             case SDL_KEYDOWN: {
                 KeyStates = SDL_GetKeyboardState(NULL);
-                if (isKeyDown(SDL_SCANCODE_ESCAPE)) {
-                    FreeResources();
-                    exit(0);
-                }
                 break;
             }
-            case SDL_MOUSEBUTTONDOWN:  {
+            case SDL_MOUSEBUTTONDOWN: {
                 if (evnt.button.button == SDL_BUTTON_LEFT) {
                     current_prev_music(0);
                     current_play_n_pause(0);
@@ -114,14 +129,14 @@ void EvntHandler() {
                     clear_audio_queue();
                 }
             }
+            /* dont break the case */
             default: {
-                animate_frames(evnt);
+                animation_state(evnt);
                 break;
             }
         }
-    }  
-    audioex_updator();
-}
+    }
+}        
 
 void Render() {
     SDL_SetRenderDrawColor(renderer, 139, 155, 180, 255);
@@ -129,7 +144,6 @@ void Render() {
     /* draw here */
     Draw_Textures(renderer);
     
-    //----------//
     SDL_RenderPresent(renderer);
 }
 
@@ -137,6 +151,7 @@ void FreeResources() {
 #ifdef WIN32
     UnhookWindowsHookEx(kbd);
 #endif 
+    FreeAudioQueue();
     Free_Texture();
     DeinitAudioDevice();
     TTF_Quit();

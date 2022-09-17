@@ -1,7 +1,9 @@
 #include "include/audiomanager.h"
 #include "string.h"
 
-#define AUDIO_EX_H
+#define _ERROR_H
+#define _DEST_RECTS_H
+#include "include/globals.h"
 
 #ifdef WIN32
 #define c_strdup _strdup
@@ -9,9 +11,14 @@
 #define c_strdup strdup
 #endif /* native call */
 
-extern int music_state;
-extern SDL_Rect forwardDest;
-extern SDL_Rect rewindDest;
+#define _BAR_LIMIT 243.0f
+/* music_bar properties */
+static int _dynamic_pos = 0;
+static float bar_addr = 0.0f;
+extern SDL_FRect _music_bar;    
+/* ===================== */
+
+extern void update_music_intels(int _dur);
 
 /* music nodes */
 static music_props* header = NULL;
@@ -22,12 +29,17 @@ static music_props* next_addr = NULL;
 
 /* export */
 const char* active_title = "Empty Queue";
-float _dynamic_pos = 0.0f;
 
 /* plays the music upon button_state */
-static void play_now(Mix_Music* curr) { 
+static void play_now(Mix_Music* curr) {
+    _music_bar.w = 0.0f;
+    bar_addr = 0.0f;
+    float temp_dur = (float)current->mus_duration;
+    bar_addr = _BAR_LIMIT / temp_dur;
+    
     active_title = current->title;
     Mix_HaltMusic();
+    extern int music_state;
     if(music_state) { Mix_PlayMusic(curr, 0); }
     else {
         Mix_PlayMusic(curr, 0);
@@ -120,6 +132,7 @@ void FreeAudioQueue() {
     if (header != NULL) {
         header = NULL; 
         current = NULL;
+        _music_bar.w = 0.0f;
         update_music_intels(0);
         while (tempo != NULL) {
             next_addr = tempo->next;
@@ -133,11 +146,13 @@ void FreeAudioQueue() {
             tempo = next_addr;
         }
         tempo = next_addr = new_node = NULL;
+        SDL_Log("Freed Audio Queue");
     }
     else { SDL_Log("Empty queue"); }
 }
 
-
+/* for getting the mouse pos */
+static SDL_Point mousepointer;
 /* points to the previous object if any */
 void current_prev_music(int byKey) {
     SDL_GetMouseState(&mousepointer.x, &mousepointer.y);
@@ -164,7 +179,7 @@ void current_next_music(int byKey) {
 
 void audioex_updator() {
     if (current) {
-        _dynamic_pos = (float)Mix_GetMusicPosition(current->_music);
+        _dynamic_pos = (int)Mix_GetMusicPosition(current->_music);
     }
     if (header != NULL) {
         if (!Mix_PlayingMusic()) {
@@ -174,5 +189,12 @@ void audioex_updator() {
                 play_now(current->_music);
             }
         }
+    }
+    static int prev = 0;
+    if (_dynamic_pos == 0) { prev = 0; _music_bar.w = 0.0f; }
+    if (prev < _dynamic_pos) {
+        SDL_Log("%d", bar_addr);
+        _music_bar.w += bar_addr;
+        prev = _dynamic_pos;
     }
 }

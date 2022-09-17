@@ -13,10 +13,10 @@ static HHOOK kbd;
 static SDL_bool state;
 
 SDL_bool InitSystem();
+void Update();
 void EvntHandler();
 void Render();
 
 void FreeResources();
 
 #endif
-

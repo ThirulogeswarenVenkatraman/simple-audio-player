@@ -29,15 +29,7 @@ void current_next_music(int byKey);
 
 void clear_audio_queue();
 
+// FIXME !!
+//  void change_music_pos();
+
 #endif
-
-#ifndef AUDIO_EX_H
-
-// for getting the mouse position 
-static SDL_Point mousepointer;
-
-extern void update_music_intels(int _dur);
-extern void throw_error(const char* title, const char* errmsg);
-extern void throw_warning(const char* title, const char* errmsg);
-
-#endif 

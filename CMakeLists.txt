@@ -15,7 +15,7 @@ else()
 endif()
 
 if(WIN32)
-    add_executable(${PROJECT_NAME} WIN32 main.c smp.c animator.c audiomanager.c audioex.c globals.c)
+    add_executable(${PROJECT_NAME} main.c smp.c animator.c audiomanager.c audioex.c globals.c)
 
     target_link_libraries(${PROJECT_NAME} 
     ${CMAKE_SOURCE_DIR}/deps/libs/SDL2main.lib
