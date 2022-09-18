@@ -9,7 +9,7 @@ void Init_Textures(SDL_Renderer* main_renderer);
 void Draw_Textures(SDL_Renderer* main_renderer);
 void Free_Texture();
 
-void animation_state(SDL_Event _evnt);
+void animation_states(SDL_Event _evnt);
 
 #endif 
 

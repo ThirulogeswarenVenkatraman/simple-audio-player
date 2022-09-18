@@ -1,6 +1,7 @@
 #include "include/smp.h"
 #include "include/animator.h"
 #include "include/audiomanager.h"
+#include "include/volumebar.h"
 
 /* window props */
 #define WINDOW_SCREEN_X 480
@@ -28,6 +29,10 @@ LRESULT CALLBACK outMultiMediaKeys(int nCode, WPARAM wParam, LPARAM lParam) {
             if (mmkey->vkCode == VK_MEDIA_NEXT_TRACK) {
                 current_next_music(1);
             }
+            break;
+        }
+        default: {
+            animation_states(evnt);
             break;
         }
     }
@@ -87,7 +92,8 @@ SDL_bool InitSystem() {
 
     /* Loading Textures */
     Init_Textures(renderer);
-    
+    InitVolumeBar(renderer);
+
     return SDL_TRUE;
 }
 
@@ -97,6 +103,7 @@ void Update() {
         FreeResources();
         exit(0);
     }
+
 }
 
 void EvntHandler() {
@@ -127,11 +134,13 @@ void EvntHandler() {
                     current_play_n_pause(0);
                     current_next_music(0);
                     clear_audio_queue();
+
+                    update_volume();
                 }
             }
             /* dont break the case */
             default: {
-                animation_state(evnt);
+                animation_states(evnt);
                 break;
             }
         }
@@ -142,6 +151,7 @@ void Render() {
     SDL_SetRenderDrawColor(renderer, 139, 155, 180, 255);
     SDL_RenderClear(renderer);
     /* draw here */
+    DrawVolumeBar(renderer);
     Draw_Textures(renderer);
     
     SDL_RenderPresent(renderer);
@@ -152,6 +162,7 @@ void FreeResources() {
     UnhookWindowsHookEx(kbd);
 #endif 
     FreeAudioQueue();
+    FreeVolumeBar();
     Free_Texture();
     DeinitAudioDevice();
     TTF_Quit();

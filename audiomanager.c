@@ -44,6 +44,25 @@ void current_play_n_pause(int byKey) {
 	}
 }
 
+const SDL_Rect volbnDest = { 390, 60, 24, 146 };
+const SDL_Rect volDest = { 390, 60, 24, 146 };
+static void setVolume(int _volume) {
+	Mix_VolumeMusic(_volume);
+}
+
+#define VOL_S 60
+#define VOL_E 146
+static int volume_pos = 0;
+void volume_bar(SDL_Event _evnt) {
+	SDL_GetMouseState(&mousepointer.x, &mousepointer.y);
+	if (SDL_PointInRect(&mousepointer, &volDest)) {
+		if (_evnt.button.state == SDL_PRESSED && _evnt.button.button == SDL_BUTTON_LEFT) {
+			SDL_Log("ere");
+
+		}
+	}
+}
+
 void clear_audio_queue() { 
 	SDL_GetMouseState(&mousepointer.x, &mousepointer.y);
 	if (SDL_PointInRect(&mousepointer, &cqDest)) {

@@ -1,10 +1,13 @@
 #include "include/animator.h"
 #include "SDL2/SDL_mixer.h"
 
-#define _FRAME_H
 #define _ERROR_H
 #define _DEST_RECTS_H
 #include "include/globals.h"
+
+/* externals */
+extern int music_state;
+extern const char* active_title;
 
 /* Textures */
 static SDL_Texture* _bar = NULL;
@@ -69,7 +72,6 @@ static void load_the_fonts(const char* filename) {
 	}
 }
 
-
 static SDL_Rect mus_dur_Dest; static SDL_Rect mus_intel_Dest;
 static void load_the_music_intel(int _duration) {
 	if ((_fmus_duration != NULL) && (_mus_intels != NULL)) {
@@ -98,6 +100,7 @@ void Init_Textures(SDL_Renderer* main_renderer) {
 	_forward = Load_Textures("assets/forward.png", main_renderer);
 	_clearqueue = Load_Textures("assets/clearqueue.png", main_renderer);
 	_bar = Load_Textures("assets/bar.png", main_renderer);
+
 	load_the_music_intel(0);
 }
 
@@ -106,19 +109,20 @@ void update_music_intels(int _dur) {
 }
 
 /* Active states */
-static SDL_Rect RW_Active;
-static SDL_Rect PL_Active;
-static SDL_Rect FO_Active;
-static SDL_Rect ST_Active;
-static SDL_Rect BAR_Active;
-static SDL_Rect CQ_Active;
+static SDL_Rect bar_src = { 0, 0, 36, 3 }; // static 
+
+static SDL_Rect rewind_src = { 0, 0, 22, 16 }; // rewind 0 22 44 
+static SDL_Rect play_src = { 0, 0, 16, 16 };   // playnpause 0 16 32 48 64 80 
+static SDL_Rect forward_src = { 0, 0, 22, 16 }; // forward 0 22 44
+
+static SDL_Rect clear_src = { 0, 0, 16, 16 }; // clear 0 16 32
 
 void Draw_Textures(SDL_Renderer *main_renderer) { /* Render it */
-	SDL_RenderCopy(main_renderer, _play, &PL_Active, &playDest);
-	SDL_RenderCopy(main_renderer, _forward, &FO_Active, &forwardDest);
-	SDL_RenderCopy(main_renderer, _rewind, &RW_Active, &rewindDest);
-	SDL_RenderCopy(main_renderer, _clearqueue, &CQ_Active, &cqDest);
-	SDL_RenderCopy(main_renderer, _bar, &BAR_Active, &barDest);
+	SDL_RenderCopy(main_renderer, _play, &play_src, &playDest);
+	SDL_RenderCopy(main_renderer, _forward, &forward_src, &forwardDest);
+	SDL_RenderCopy(main_renderer, _rewind, &rewind_src, &rewindDest);
+	SDL_RenderCopy(main_renderer, _clearqueue, &clear_src, &cqDest);
+	SDL_RenderCopy(main_renderer, _bar, &bar_src, &barDest);
 	/* rendering fonts */
 	SDL_RenderCopy(main_renderer, _fmus_duration, NULL, &mus_dur_Dest);
 	SDL_RenderCopy(main_renderer, _mus_intels, NULL, &mus_intel_Dest);
@@ -150,82 +154,59 @@ void Free_Texture() {
 }
 
 static SDL_Point mousepointer;
-void animation_state(SDL_Event _evnt) {
+void animation_states(SDL_Event _evnt) {
 	SDL_GetMouseState(&mousepointer.x, &mousepointer.y);
 	if (SDL_PointInRect(&mousepointer, &playDest)) { /* play_n_pause */
 		if (music_state) {
-			PL_Active = PX_FRAME_TWO;
+			play_src.x = 16;
 			if (_evnt.button.state == SDL_PRESSED &&
 				_evnt.button.button == SDL_BUTTON_LEFT) {
-				PL_Active = PX_FRAME_THR;
+				play_src.x = 32;
 			}
-			else if (_evnt.button.state == SDL_RELEASED &&
-				_evnt.button.button == SDL_BUTTON_LEFT) {
-				PL_Active = PX_FRAME_TWO;
-			}
+			else { play_src.x = 16; }
 		}
 		else {
-			PL_Active = PX_FRAME_FIV;
+			play_src.x = 64;
 			if (_evnt.button.state == SDL_PRESSED &&
 				_evnt.button.button == SDL_BUTTON_LEFT) {
-				PL_Active = PX_FRAME_SIX;
+				play_src.x = 80;
 			}
-			else if (_evnt.button.state == SDL_RELEASED &&
-				_evnt.button.button == SDL_BUTTON_LEFT) {
-				PL_Active = PX_FRAME_FIV;
-			}
+			else { play_src.x = 64; }
 		}
-
 	}
 	else if (SDL_PointInRect(&mousepointer, &forwardDest)) { /* forward */
-		FO_Active = PXF_FRAME_TWO;
+		forward_src.x = 22;
 		if (_evnt.button.state == SDL_PRESSED &&
 			_evnt.button.button == SDL_BUTTON_LEFT) {
-			FO_Active = PXF_FRAME_THR;
+			forward_src.x = 44;
 		}
-		else if (_evnt.button.state == SDL_RELEASED &&
-			_evnt.button.button == SDL_BUTTON_LEFT)
-		{
-			FO_Active = PXF_FRAME_TWO;
-		}
+		else { forward_src.x = 22; }
 	}
 	else if (SDL_PointInRect(&mousepointer, &rewindDest)) { /* rewind */
-		RW_Active = PXR_FRAME_TWO;
+		rewind_src.x = 22;
 		if (_evnt.button.state == SDL_PRESSED &&
 			_evnt.button.button == SDL_BUTTON_LEFT) {
-			RW_Active = PXR_FRAME_THR;
+			rewind_src.x = 44;
 		}
-		else if (_evnt.button.state == SDL_RELEASED &&
-			_evnt.button.button == SDL_BUTTON_LEFT)
-		{
-			RW_Active = PXR_FRAME_TWO;
-		}
+		else { rewind_src.x = 22; }
 	}
 	else if (SDL_PointInRect(&mousepointer, &cqDest)) { /* clear_queue */
-		CQ_Active = PXCQ_FRAME_TWO;
+		clear_src.x = 16;
 		if (_evnt.button.state == SDL_PRESSED &&
 			_evnt.button.button == SDL_BUTTON_LEFT) {
-			CQ_Active = PXCQ_FRAME_THR;
+			clear_src.x = 32;
 		}
-		else if (_evnt.button.state == SDL_RELEASED &&
-			_evnt.button.button == SDL_BUTTON_LEFT)
-		{
-			CQ_Active = PXCQ_FRAME_TWO;
-		}
+		else { clear_src.x = 16; }
 	}
 	else { /* Normal */
 		if (music_state) { // 1 when playing
-			PL_Active = PX_FRAME_ONE;
+			play_src.x = 0;
 		}
 		else { // 0 if paused
-			PL_Active = PX_FRAME_FOU;
+			play_src.x = 48;
 		}
-		FO_Active = PXF_FRAME_ONE;
-		RW_Active = PXR_FRAME_ONE;
-		CQ_Active = PXCQ_FRAME_ONE;
-		BAR_Active = PXBAR_FRAME_ONE;
+		forward_src.x = rewind_src.x = clear_src.x = 0;
 	}
-
 }
 
 
