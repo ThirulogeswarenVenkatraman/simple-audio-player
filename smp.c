@@ -2,6 +2,7 @@
 #include "include/animator.h"
 #include "include/audiomanager.h"
 #include "include/volumebar.h"
+#include "include/musicbar.h"
 
 /* window props */
 #define WINDOW_SCREEN_X 480
@@ -92,12 +93,14 @@ SDL_bool InitSystem() {
 
     /* Loading Textures */
     Init_Textures(renderer);
+    InitMusicBar(renderer);
     InitVolumeBar(renderer);
 
     return SDL_TRUE;
 }
 
 void Update() {
+    update_music_bar();
     audioex_updator();
     if (isKeyDown(SDL_SCANCODE_ESCAPE)) {
         FreeResources();
@@ -151,6 +154,7 @@ void Render() {
     SDL_SetRenderDrawColor(renderer, 139, 155, 180, 255);
     SDL_RenderClear(renderer);
     /* draw here */
+    DrawMusicBar(renderer);
     DrawVolumeBar(renderer);
     Draw_Textures(renderer);
     
@@ -162,6 +166,7 @@ void FreeResources() {
     UnhookWindowsHookEx(kbd);
 #endif 
     FreeAudioQueue();
+    FreeMusicBar();
     FreeVolumeBar();
     Free_Texture();
     DeinitAudioDevice();

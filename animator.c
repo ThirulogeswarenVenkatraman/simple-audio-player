@@ -1,16 +1,15 @@
 #include "include/animator.h"
 #include "SDL2/SDL_mixer.h"
 
-#define _ERROR_H
-#define _DEST_RECTS_H
+/* contains dst Rects */
 #include "include/globals.h"
 
 /* externals */
 extern int music_state;
 extern const char* active_title;
+extern void throw_error(const char* title, const char* errmsg);
 
 /* Textures */
-static SDL_Texture* _bar = NULL;
 static SDL_Texture* _rewind = NULL;
 static SDL_Texture* _play = NULL;
 static SDL_Texture* _forward = NULL;
@@ -21,11 +20,8 @@ static SDL_Texture* _clearqueue = NULL;
 static SDL_Texture* _fmus_duration = NULL;
 static SDL_Texture* _mus_intels = NULL;
 
-/* music bar */
-SDL_FRect _music_bar = { 31.0f, 143.0f, 0.0f, 4.0f };
-
-/* don't free it here */
-static SDL_Renderer* in_renderer = NULL;
+/* don't free it here*/
+SDL_Renderer* in_renderer = NULL;
 
 static SDL_Texture* Load_Textures(const char* filename, SDL_Renderer* main_renderer) {
 	static SDL_Texture* temp_texture = NULL;
@@ -38,6 +34,7 @@ static SDL_Texture* Load_Textures(const char* filename, SDL_Renderer* main_rende
 	SDL_FreeSurface(temp_surface);
 	return temp_texture;
 }
+
 static char outdur[] = { '0', ':', '0', '0', '\0' };
 static void conv_to_min(int sec) {
 	outdur[0] = outdur[2] = outdur[3] = '0';
@@ -73,17 +70,17 @@ static void load_the_fonts(const char* filename) {
 }
 
 static SDL_Rect mus_dur_Dest; static SDL_Rect mus_intel_Dest;
-static void load_the_music_intel(int _duration) {
+void load_music_intels(int _duration) {
 	if ((_fmus_duration != NULL) && (_mus_intels != NULL)) {
 		SDL_DestroyTexture(_fmus_duration); _fmus_duration = NULL;
 		SDL_DestroyTexture(_mus_intels); _mus_intels = NULL;
 	}
 	conv_to_min(_duration);
-	SDL_Surface* temp_surf_duration = TTF_RenderText_Solid(fonty_music_dur, outdur, (SDL_Color){58, 68, 102, 255});
-	SDL_Surface* temp_surf_music_intel = TTF_RenderText_Solid(fonty_music_intel, active_title, (SDL_Color){58, 68, 102, 255});
+	SDL_Surface* temp_surf_duration = TTF_RenderText_Solid(fonty_music_dur, outdur, (SDL_Color) { 58, 68, 102, 255 });
+	SDL_Surface* temp_surf_music_intel = TTF_RenderText_Solid(fonty_music_intel, active_title, (SDL_Color) { 58, 68, 102, 255 });
 	/* destination */
-	mus_dur_Dest = (SDL_Rect){286, 136, temp_surf_duration->w, temp_surf_duration->h };
-	mus_intel_Dest = (SDL_Rect){30, 60, temp_surf_music_intel->w, temp_surf_music_intel->h };
+	mus_dur_Dest = (SDL_Rect){ 286, 136, temp_surf_duration->w, temp_surf_duration->h };
+	mus_intel_Dest = (SDL_Rect){ 30, 60, temp_surf_music_intel->w, temp_surf_music_intel->h };
 	/* set the textures -> dynamic textures */
 	_fmus_duration = SDL_CreateTextureFromSurface(in_renderer, temp_surf_duration);
 	_mus_intels = SDL_CreateTextureFromSurface(in_renderer, temp_surf_music_intel);
@@ -94,23 +91,17 @@ static void load_the_music_intel(int _duration) {
 }
 
 void Init_Textures(SDL_Renderer* main_renderer) {
+	in_renderer = main_renderer;
 	load_the_fonts("assets/fonty.ttf");
 	_rewind = Load_Textures("assets/rewind.png", main_renderer);
 	_play = Load_Textures("assets/playpause.png", main_renderer);
 	_forward = Load_Textures("assets/forward.png", main_renderer);
 	_clearqueue = Load_Textures("assets/clearqueue.png", main_renderer);
-	_bar = Load_Textures("assets/bar.png", main_renderer);
 
-	load_the_music_intel(0);
-}
-
-void update_music_intels(int _dur) {
-	load_the_music_intel(_dur);
+	load_music_intels(0);
 }
 
 /* Active states */
-static SDL_Rect bar_src = { 0, 0, 36, 3 }; // static 
-
 static SDL_Rect rewind_src = { 0, 0, 22, 16 }; // rewind 0 22 44 
 static SDL_Rect play_src = { 0, 0, 16, 16 };   // playnpause 0 16 32 48 64 80 
 static SDL_Rect forward_src = { 0, 0, 22, 16 }; // forward 0 22 44
@@ -122,13 +113,9 @@ void Draw_Textures(SDL_Renderer *main_renderer) { /* Render it */
 	SDL_RenderCopy(main_renderer, _forward, &forward_src, &forwardDest);
 	SDL_RenderCopy(main_renderer, _rewind, &rewind_src, &rewindDest);
 	SDL_RenderCopy(main_renderer, _clearqueue, &clear_src, &cqDest);
-	SDL_RenderCopy(main_renderer, _bar, &bar_src, &barDest);
 	/* rendering fonts */
 	SDL_RenderCopy(main_renderer, _fmus_duration, NULL, &mus_dur_Dest);
 	SDL_RenderCopy(main_renderer, _mus_intels, NULL, &mus_intel_Dest);
-	/* music bar */
-	SDL_SetRenderDrawColor(main_renderer, 58, 68, 102, 255);
-	SDL_RenderFillRectF(main_renderer, &_music_bar);
 }
 
 void Free_Texture() {
@@ -136,8 +123,6 @@ void Free_Texture() {
 		SDL_DestroyTexture(_fmus_duration); _fmus_duration = NULL;
 		SDL_DestroyTexture(_mus_intels); _mus_intels = NULL;
 	}
-	SDL_DestroyTexture(_bar);
-	_bar = NULL;
 	SDL_DestroyTexture(_clearqueue);
 	_clearqueue = NULL;
 	SDL_DestroyTexture(_rewind);

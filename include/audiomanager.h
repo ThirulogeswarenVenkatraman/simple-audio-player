@@ -30,7 +30,5 @@ void current_next_music(int byKey);
 
 void clear_audio_queue();
 
-// FIXME !!
-// void change_music_pos();
 
 #endif

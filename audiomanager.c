@@ -1,12 +1,9 @@
 #include "include/audiomanager.h"
 
-#define _ERROR_H
-#include "include/globals.h"
-
 /* Externals */
 extern SDL_Rect playDest;
 extern SDL_Rect cqDest;
-
+extern void throw_error(const char* title, const char* errmsg);
 /* 1 -> Playing */
 int music_state = 1;
 

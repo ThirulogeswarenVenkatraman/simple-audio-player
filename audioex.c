@@ -1,24 +1,17 @@
 #include "include/audiomanager.h"
 #include "string.h"
 
-#define _ERROR_H
-#define _DEST_RECTS_H
 #include "include/globals.h"
 
-#ifdef WIN32
+#ifdef WIN32    // FIXME !!! need custom method
 #define c_strdup _strdup
 #else
 #define c_strdup strdup
 #endif /* native call */
 
-#define _BAR_LIMIT 243.0f
-/* music_bar properties */
-static int _dynamic_pos = 0;
-static float bar_addr = 0.0f;
-extern SDL_FRect _music_bar;    
-/* ===================== */
-
-extern void update_music_intels(int _dur);
+extern int music_state;
+extern void load_music_intels(int _duration);
+extern void throw_warning(const char* title, const char* errmsg);
 
 /* music nodes */
 static music_props* header = NULL;
@@ -29,23 +22,24 @@ static music_props* next_addr = NULL;
 
 /* export */
 const char* active_title = "Empty Queue";
+/* music pos bar prop */
+float bar_addr = 0.0f;
+extern SDL_FRect _music_bar;
+static int _dynamic_pos = 0;
 
 /* plays the music upon button_state */
 static void play_now(Mix_Music* curr) {
     _music_bar.w = 0.0f;
-    bar_addr = 0.0f;
     float temp_dur = (float)current->mus_duration;
-    bar_addr = _BAR_LIMIT / temp_dur;
-    
+    bar_addr = 243.0f / temp_dur;
     active_title = current->title;
     Mix_HaltMusic();
-    extern int music_state;
     if(music_state) { Mix_PlayMusic(curr, 0); }
     else {
         Mix_PlayMusic(curr, 0);
         Mix_PauseMusic();
     }
-    update_music_intels(current->mus_duration);
+    load_music_intels(current->mus_duration); 
 }
 
 SDL_bool isHeaderEmpty() {
@@ -133,7 +127,7 @@ void FreeAudioQueue() {
         header = NULL; 
         current = NULL;
         _music_bar.w = 0.0f;
-        update_music_intels(0);
+        load_music_intels(0);
         while (tempo != NULL) {
             next_addr = tempo->next;
             free(tempo->title);
@@ -177,10 +171,15 @@ void current_next_music(int byKey) {
     }
 }
 
-void audioex_updator() {
+int dyn_bar_pos() {
     if (current) {
         _dynamic_pos = (int)Mix_GetMusicPosition(current->_music);
+        return _dynamic_pos;
     }
+    return _dynamic_pos;
+}
+
+void audioex_updator() {
     if (header != NULL) {
         if (!Mix_PlayingMusic()) {
             /* if any music is loaded -> PLAY IT */
@@ -190,11 +189,5 @@ void audioex_updator() {
             }
         }
     }
-    static int prev = 0;
-    if (_dynamic_pos == 0) { prev = 0; _music_bar.w = 0.0f; }
-    if (prev < _dynamic_pos) {
-        SDL_Log("%d", bar_addr);
-        _music_bar.w += bar_addr;
-        prev = _dynamic_pos;
-    }
+    
 }
