@@ -19,7 +19,6 @@ void DeinitAudioDevice();
 
 void load_header(const char* filename);
 void load_at_last(const char* filename);
-void volume_bar(SDL_Event _evnt);
 void FreeAudioQueue();
 
 /* DLList :P */ 

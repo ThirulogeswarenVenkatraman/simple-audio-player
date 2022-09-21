@@ -14,7 +14,7 @@ else()
     add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
 
-if(WIN32)
+if(WIN32 AND MSVC)
     add_executable(${PROJECT_NAME} main.c smp.c animator.c audiomanager.c audioex.c musicbar.c volumebar.c globals.c)
 
     target_link_libraries(${PROJECT_NAME} 
@@ -24,6 +24,6 @@ if(WIN32)
     ${CMAKE_SOURCE_DIR}/deps/libs/SDL2_image.lib
     ${CMAKE_SOURCE_DIR}/deps/libs/SDL2_ttf.lib
     )
-endif(WIN32)
+endif(WIN32 AND MSVC)
 
 

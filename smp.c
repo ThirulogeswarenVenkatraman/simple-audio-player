@@ -139,6 +139,7 @@ void EvntHandler() {
                     clear_audio_queue();
 
                     update_volume();
+                    set_music_position_c();
                 }
             }
             /* dont break the case */

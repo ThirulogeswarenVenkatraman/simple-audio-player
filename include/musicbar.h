@@ -6,6 +6,7 @@
 void InitMusicBar(SDL_Renderer* inrenderer);
 void DrawMusicBar(SDL_Renderer* inrenderer);
 void update_music_bar();
+void set_music_position_c();
 
 void FreeMusicBar();
 

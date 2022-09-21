@@ -2,8 +2,6 @@
 #include "SDL2/SDL_image.h"
 #include "SDL2/SDL_mixer.h"
 
-#define INVERSE_ 128
-
 static SDL_Rect src_rect = { 0, 0, 6, 36 };
 static SDL_Rect dst_rect = { 390, 60, 24, 128 };
 /* dynamic -> y and h */
@@ -21,6 +19,7 @@ void InitVolumeBar(SDL_Renderer* inrenderer) {
 	volume_bar = SDL_CreateTextureFromSurface(inrenderer, temp_bar_surf);
 	SDL_FreeSurface(temp_bar_surf); 
 	temp_bar_surf = NULL;
+	dynamic_btn.h = -100;
 }
 
 static SDL_Point r_mous = { 0, 0 };
@@ -29,7 +28,7 @@ void update_volume() {
 	SDL_GetMouseState(&r_mous.x, &r_mous.y);
 	if (SDL_PointInRect(&r_mous, &dst_rect)) { // pos -> 60 to 187
 		val = (int)(r_mous.y - dst_rect.y); // 0 to 128
-		val = INVERSE_ - val;
+		val = 128 - val;
 		if (val < 128) {
 			dynamic_btn.h = -val;
 		}

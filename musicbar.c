@@ -12,6 +12,7 @@ static int _live_pos;
 static SDL_Rect bar_src = { 0, 0, 36, 3 }; // static 
 const SDL_Rect bar_dst = { 28, 139, 252, 12 }; /* bar */
 /* music bar dynamic */
+SDL_Rect changer_bar = { 31, 143, 243, 4 };
 SDL_FRect _music_bar = { 31.0f, 143.0f, 0.0f, 4.0f };
 
 static SDL_Texture* _bar = NULL;
@@ -32,16 +33,42 @@ void DrawMusicBar(SDL_Renderer* inrenderer) {
 	SDL_SetRenderDrawColor(inrenderer, 58, 68, 102, 255);
 	SDL_RenderFillRectF(inrenderer, &_music_bar);
 }
-
+static int prev = 0;
 extern int dyn_bar_pos();
+extern int current_mus_duration;
 void update_music_bar() {
-	static int prev = 0;
+	
 	_live_pos = dyn_bar_pos();
 	if (_live_pos == 0) { prev = 0; _music_bar.w = 0.0f; }
 	if (prev < _live_pos) {
 		SDL_Log("%d", bar_addr);
 		_music_bar.w += bar_addr;
 		prev = _live_pos;
+	}
+
+}
+
+void set_music_position_c() {
+	static SDL_Point mouse_pos;
+	static int temp_prev;
+	static double temp_live_pos;
+	static float accumulator;
+	SDL_GetMouseState(&mouse_pos.x, &mouse_pos.y);
+	if (SDL_PointInRect(&mouse_pos, &changer_bar) && bar_addr) {
+		static int from_bar;
+		from_bar = mouse_pos.x - changer_bar.x;
+		for (float from = 0.0f, till = (float)from_bar;
+			from < till; from += bar_addr) { /* respect to musicbar <rect> */
+			accumulator += bar_addr;
+			temp_prev++;
+		}
+		prev = temp_prev;
+		temp_live_pos = (double)(temp_prev + 1);
+		Mix_SetMusicPosition(temp_live_pos);
+		_music_bar.w = accumulator;
+		accumulator = 0.0f;
+		temp_live_pos = 0.0f;
+		temp_prev = 0;
 	}
 }
 

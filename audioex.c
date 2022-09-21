@@ -23,6 +23,7 @@ static music_props* next_addr = NULL;
 /* export */
 const char* active_title = "Empty Queue";
 /* music pos bar prop */
+int current_mus_duration = 0;
 float bar_addr = 0.0f;
 extern SDL_FRect _music_bar;
 static int _dynamic_pos = 0;
@@ -39,7 +40,8 @@ static void play_now(Mix_Music* curr) {
         Mix_PlayMusic(curr, 0);
         Mix_PauseMusic();
     }
-    load_music_intels(current->mus_duration); 
+    load_music_intels(current->mus_duration);
+    current_mus_duration = current->mus_duration;
 }
 
 SDL_bool isHeaderEmpty() {

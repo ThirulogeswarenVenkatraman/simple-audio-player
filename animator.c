@@ -101,7 +101,7 @@ void Init_Textures(SDL_Renderer* main_renderer) {
 	load_music_intels(0);
 }
 
-/* Active states */
+/* source rects -> active states */
 static SDL_Rect rewind_src = { 0, 0, 22, 16 }; // rewind 0 22 44 
 static SDL_Rect play_src = { 0, 0, 16, 16 };   // playnpause 0 16 32 48 64 80 
 static SDL_Rect forward_src = { 0, 0, 22, 16 }; // forward 0 22 44
