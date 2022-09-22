@@ -49,7 +49,6 @@ void clear_audio_queue() {
 }
 
 void DeinitAudioDevice() {
-	//FreeAudioQueue();
 	Mix_CloseAudio();
 	Mix_Quit();
 }

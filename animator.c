@@ -108,7 +108,7 @@ static SDL_Rect forward_src = { 0, 0, 22, 16 }; // forward 0 22 44
 
 static SDL_Rect clear_src = { 0, 0, 16, 16 }; // clear 0 16 32
 
-void Draw_Textures(SDL_Renderer *main_renderer) { /* Render it */
+void Draw_Textures(SDL_Renderer *main_renderer) {
 	SDL_RenderCopy(main_renderer, _play, &play_src, &playDest);
 	SDL_RenderCopy(main_renderer, _forward, &forward_src, &forwardDest);
 	SDL_RenderCopy(main_renderer, _rewind, &rewind_src, &rewindDest);

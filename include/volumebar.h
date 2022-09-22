@@ -7,6 +7,9 @@ void InitVolumeBar(SDL_Renderer* inrenderer);
 void DrawVolumeBar(SDL_Renderer* inrenderer);
 void update_volume();
 
+void onScrollUpie();
+void onScrollDownie();
+
 void FreeVolumeBar();
 
 #endif 

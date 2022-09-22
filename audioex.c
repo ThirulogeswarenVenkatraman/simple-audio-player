@@ -3,7 +3,7 @@
 
 #include "include/globals.h"
 
-#ifdef WIN32    // FIXME !!! need custom method
+#ifdef WIN32   
 #define c_strdup _strdup
 #else
 #define c_strdup strdup
@@ -23,10 +23,8 @@ static music_props* next_addr = NULL;
 /* export */
 const char* active_title = "Empty Queue";
 /* music pos bar prop */
-int current_mus_duration = 0;
 float bar_addr = 0.0f;
 extern SDL_FRect _music_bar;
-static int _dynamic_pos = 0;
 
 /* plays the music upon button_state */
 static void play_now(Mix_Music* curr) {
@@ -41,11 +39,25 @@ static void play_now(Mix_Music* curr) {
         Mix_PauseMusic();
     }
     load_music_intels(current->mus_duration);
-    current_mus_duration = current->mus_duration;
 }
 
 SDL_bool isHeaderEmpty() {
     return (header == NULL ? SDL_TRUE : SDL_FALSE);
+}
+
+static char in_filename[100];
+static void crop_filename(const char* fn) {
+    char buff[100]; int i;
+    const char* postr = fn;
+    while (*postr != '.') {
+        postr++;
+    }
+    for (i = 0; *postr != '\\'; i++, postr--) {
+        buff[i] = *postr;
+    } buff[i] = '\0';
+
+    SDL_strrev(buff);
+    SDL_strlcpy(in_filename, buff, 100);
 }
 
 void load_header(const char* filename) {
@@ -62,11 +74,8 @@ void load_header(const char* filename) {
         else {
             header->prev = NULL;
             header->title = NULL;
-            header->title = c_strdup(Mix_GetMusicTitleTag(header->_music));
-            if (SDL_strlen(header->title) == 0)
-            {
-                header->title = c_strdup("album unknown");
-            }
+            crop_filename(filename);
+            header->title = c_strdup(in_filename);
             header->mus_duration = (int)(Mix_MusicDuration(header->_music));
             header->next = NULL;
             current = header;
@@ -97,11 +106,8 @@ void load_at_last(const char* filename) {
             while (tempo->next != NULL) { tempo = tempo->next; }
             new_node->prev = tempo;
             new_node->title = NULL;
-            new_node->title = c_strdup(Mix_GetMusicTitleTag(new_node->_music));
-            if (SDL_strlen(new_node->title) == 0)
-            {
-                new_node->title = c_strdup("album unknown");
-            }
+            crop_filename(filename);
+            new_node->title = c_strdup(in_filename);
             new_node->mus_duration = (int)(Mix_MusicDuration(new_node->_music));
             new_node->next = NULL;
             tempo = header;
@@ -175,10 +181,9 @@ void current_next_music(int byKey) {
 
 int dyn_bar_pos() {
     if (current) {
-        _dynamic_pos = (int)Mix_GetMusicPosition(current->_music);
-        return _dynamic_pos;
+        return ((int)Mix_GetMusicPosition(current->_music));
     }
-    return _dynamic_pos;
+    return 0;
 }
 
 void audioex_updator() {
@@ -188,6 +193,9 @@ void audioex_updator() {
             if ((current != NULL) && (current->next != NULL)) {
                 current = current->next;
                 play_now(current->_music);
+            }
+            else {
+                _music_bar.w = 0.0f;
             }
         }
     }

@@ -131,6 +131,15 @@ void EvntHandler() {
                 KeyStates = SDL_GetKeyboardState(NULL);
                 break;
             }
+            case SDL_MOUSEWHEEL: {
+                if (evnt.wheel.y > 0) {
+                    onScrollUpie();
+                }
+                else if (evnt.wheel.y < 0) {
+                    onScrollDownie();
+                }
+                break;
+            }
             case SDL_MOUSEBUTTONDOWN: {
                 if (evnt.button.button == SDL_BUTTON_LEFT) {
                     current_prev_music(0);
