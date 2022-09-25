@@ -1,10 +1,11 @@
 # simple-audio-player
-a lightweight audio player written in **C** and **SDL2**
+a retro-style audio player written in **C** and **SDL**
 
 ### Features
   - supports mp3, wav, ogg
   - drag and drop support
   - support multimedia keys
+  - default location (bin/music/)
 
 ## Building for Windows
 
@@ -17,7 +18,7 @@ clone the repository and enter the cloned repository
 git clone https://github.com/ThirulogeswarenVenkatraman/simple-audio-player.git
 cd simple-audio-player
 ```
-create a directory named ``build`` inside the source folder containing CMakeLists.txt
+create a directory named ``build`` inside the base folder containing CMakeLists.txt
 ```shell
 mkdir build
 cd build 
@@ -28,10 +29,11 @@ then run the following to build the project
 ```shell
 cmake --build . --config Release
 ```
-## Building for Linux
+the executable will be placed in `bin\Release\simple-audio-player.exe`  
+make sure to place the `assets\` folder and required DLLs inside the folder containing .exe
+## Linux Dependencies
 
-### On Debian/Ubuntu
-
+#### On Debian/Ubuntu
 ```shell
 sudo apt install gcc make libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-ttf-2.0-0 
 ```
@@ -39,17 +41,19 @@ you need the latest version of [sdl-mixer](https://github.com/libsdl-org/SDL_mix
 
 ```shell
 git clone https://github.com/libsdl-org/SDL_mixer
+cd SDL_mixer
 ./configure
 make
 sudo make install
 ```
-### On Arch
+#### On Arch
+```shell
+sudo pacman -S gcc make sdl2 sdl2_image sdl2_mixer sdl2_ttf
 ```
-pacman -S sdl2 sdl2_image sdl2_mixer sdl2_ttf
-```
+## Building for Linux
 after installing dependencies, clone the repository
 ```shell
 git clone https://github.com/ThirulogeswarenVenkatraman/simple-audio-player.git
 cd simple-audio-player
 ```
-from the cloned repository, run `ccmp.bash` to compile and link simple-audio-player
+from the cloned repository, run `ccmp.bash` to build the project
