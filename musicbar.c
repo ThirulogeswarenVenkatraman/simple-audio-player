@@ -21,9 +21,12 @@ void InitMusicBar(SDL_Renderer* inrenderer) {
 	SDL_Surface* temp_surf = NULL;	
 	temp_surf = IMG_Load("assets/bar.png");
 	if (!temp_surf) {
-		throw_error("Load Error", SDL_GetError());
+		throw_error("Load Error", IMG_GetError());
 	}
 	_bar = SDL_CreateTextureFromSurface(inrenderer, temp_surf);
+	if (!_bar) {
+		throw_error("Texture Error", IMG_GetError());
+	}
 	SDL_FreeSurface(temp_surf);
 	temp_surf = NULL;
 }
@@ -49,27 +52,22 @@ void update_music_bar() {
 
 void set_music_position_c() {
 	static SDL_Point mouse_pos;
-	static int temp_prev;
-	static double temp_live_pos;
-	static float accumulator;
-	if (music_state) {
-		SDL_GetMouseState(&mouse_pos.x, &mouse_pos.y);
-		if (SDL_PointInRect(&mouse_pos, &changer_bar) && bar_addr) {
-			static int from_bar;
-			from_bar = mouse_pos.x - changer_bar.x;
-			for (float from = 0.0f, till = (float)from_bar;
-				from < till; from += bar_addr) { /* respect to musicbar <rect> */
-				accumulator += bar_addr;
-				temp_prev++;
-			}
-			prev = temp_prev;
-			temp_live_pos = (double)(temp_prev + 1);
-			Mix_SetMusicPosition(temp_live_pos);
-			_music_bar.w = accumulator;
-			accumulator = 0.0f;
-			temp_live_pos = 0.0f;
-			temp_prev = 0;
+	int temp_prev = 0;
+	double temp_live_pos = 0.0f;
+	float accumulator = 0.0f;
+	SDL_GetMouseState(&mouse_pos.x, &mouse_pos.y);
+	if (SDL_PointInRect(&mouse_pos, &changer_bar) && bar_addr) {
+		static int from_bar;
+		from_bar = mouse_pos.x - changer_bar.x;
+		for (float from = 0.0f, till = (float)from_bar;
+			from < till; from += bar_addr) { /* respect to musicbar <rect> */
+			accumulator += bar_addr;
+			temp_prev++;
 		}
+		prev = temp_prev;
+		temp_live_pos = (double)(temp_prev + 1);
+		Mix_SetMusicPosition(temp_live_pos);
+		_music_bar.w = accumulator;
 	}
 }
 

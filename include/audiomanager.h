@@ -14,6 +14,8 @@ typedef struct music {
     struct music* next;
 } music_props;
 
+void default_location();
+
 void InitAudioDevice();
 void DeinitAudioDevice();
 

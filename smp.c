@@ -4,6 +4,14 @@
 #include "include/volumebar.h"
 #include "include/musicbar.h"
 
+#include <stdio.h>
+
+#ifdef WIN32
+#include "SDL2/dirent.h"
+#else
+#include "dirent.h"
+#endif
+
 /* window props */
 #define WINDOW_SCREEN_X 480
 #define WINDOW_SCREEN_Y 240
@@ -61,28 +69,94 @@ static void set_win_icon() {
     SDL_SetWindowIcon(window, win_icon);
     SDL_FreeSurface(win_icon);
     win_icon = NULL;
-    
+
 }
 
-SDL_bool InitSystem() {
+void drop_file(const char* _filename) {
+    if (isHeaderEmpty()) {
+        load_header(_filename);
+    }
+    else {
+        load_at_last(_filename);
+    }
+}
+
+static void drop_handler(const char* _dirname) {
+    DIR* dir = opendir(_dirname);
+    if (!dir) {
+        drop_file(_dirname);
+        return;
+    }
+    char dirpath[100]; int i;
+    for (i = 0; *_dirname != '\0'; i++) {
+        dirpath[i] = *_dirname;
+        _dirname++;
+    }
+#ifdef WIN32 /* [i] will be NULL */
+    dirpath[i] = '\\';
+#else
+    dirpath[i] = '/';
+#endif 
+    dirpath[i + 1] = '\0';
+    /* got the dir-path */
+    struct dirent* ent;
+    char fullpath[100];
+    while ((ent = readdir(dir)) != NULL) {
+        SDL_zero(fullpath);
+        if (ent->d_type != DT_DIR) {
+            SDL_strlcat(fullpath, dirpath, 100); // add the dir
+            SDL_strlcat(fullpath, ent->d_name, 100); // and the name
+            fprintf(stdout, "%s \n", fullpath);
+            drop_file(fullpath);
+        }
+    }
+    closedir(dir);
+}
+
+int InitSystem() {
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
-        throw_error("Init Failed", SDL_GetError());
+        fprintf(stderr, "Init Failed: %s", SDL_GetError());
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Init Failed", SDL_GetError(), NULL);
+        SDL_Quit();
+        exit(-1);
     }
     window = SDL_CreateWindow("SMP", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
     WINDOW_SCREEN_X, WINDOW_SCREEN_Y, 0);
 
     if(!window) {
-        throw_error("Window Failed", SDL_GetError());
+        fprintf(stderr, "Window Creation Failed: %s", SDL_GetError());
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Window Creation Failed", SDL_GetError(), NULL);
+        SDL_Quit();
+        exit(-1);
     }
     set_win_icon();
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
     if(!renderer) {
-        throw_error("Renderer Failed", SDL_GetError());
+        fprintf(stderr, "Renderer Failed: %s", SDL_GetError());
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Renderer Failed", SDL_GetError(), NULL);
+        if (window != NULL) {
+            SDL_DestroyWindow(window);
+            window = NULL;
+        }
+        SDL_Quit();
+        exit(-1);
     }
     
     if(TTF_Init()) { /* returns 0 on success */
-        throw_error("TTF Failed", TTF_GetError());
+        fprintf(stderr, "TTF Failed: %s", SDL_GetError());
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "TTF Failed", SDL_GetError(), window);
+        if (renderer != NULL) {
+            SDL_DestroyRenderer(renderer);
+            renderer = NULL;
+        }
+        if (window != NULL) {
+            SDL_DestroyWindow(window);
+            window = NULL;
+        }
+        TTF_Quit();
+        SDL_Quit();
+        exit(-1);
     }
 #ifdef WIN32
     kbd = SetWindowsHookEx(WH_KEYBOARD_LL, &outMultiMediaKeys, 0, 0);
@@ -96,7 +170,8 @@ SDL_bool InitSystem() {
     InitMusicBar(renderer);
     InitVolumeBar(renderer);
 
-    return SDL_TRUE;
+    default_location();
+    return 1;
 }
 
 void Update() {
@@ -118,12 +193,7 @@ void EvntHandler() {
                 break;
             }
             case SDL_DROPFILE: {
-                if (isHeaderEmpty()) {
-                    load_header(evnt.drop.file);
-                }
-                else {
-                    load_at_last(evnt.drop.file);
-                }
+                drop_handler(evnt.drop.file);
                 SDL_free(evnt.drop.file);
                 break;
             }
@@ -181,10 +251,14 @@ void FreeResources() {
     Free_Texture();
     DeinitAudioDevice();
     TTF_Quit();
-    SDL_DestroyRenderer(renderer);
-    renderer = NULL;
-    SDL_DestroyWindow(window);
-    window = NULL;
+    if (renderer != NULL) {
+        SDL_DestroyRenderer(renderer);
+        renderer = NULL;
+    }
+    if (window != NULL) {
+        SDL_DestroyWindow(window);
+        window = NULL;
+    }
     SDL_Quit();
     SDL_Log("Resource Freed\n");
 }

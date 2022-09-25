@@ -1,5 +1,11 @@
 #include "include/audiomanager.h"
 
+#ifdef WIN32
+#include "SDL2/dirent.h"
+#else
+#include "dirent.h"
+#endif
+
 /* Externals */
 extern SDL_Rect playDest;
 extern SDL_Rect cqDest;
@@ -19,6 +25,30 @@ static void setup_audio_device() {
     }
 	SDL_Log("Audio Device opened");
 	Mix_VolumeMusic(100);
+}
+
+extern void drop_file(const char* _filename);
+void default_location() {
+	DIR* dir = opendir("music/");
+	if (!dir) {
+		return;
+	}
+	char fullpath[60];
+	struct dirent* ent;
+	while ((ent = readdir(dir)) != NULL) {
+		SDL_zero(fullpath);
+#ifdef WIN32
+		SDL_strlcat(fullpath, "music\\", 60);
+#else
+		SDL_strlcat(fullpath, "music/", 60);
+#endif
+		if (ent->d_type != DT_DIR) {
+			SDL_strlcat(fullpath, ent->d_name, 60);
+			fprintf(stdout, "%s \n", fullpath);
+			drop_file(fullpath);
+		}
+	}
+	
 }
 
 void InitAudioDevice() {

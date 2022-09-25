@@ -114,6 +114,8 @@ void DrawVolumeBar(SDL_Renderer* inrenderer) {
 
 void FreeVolumeBar() {
 	in_ren = NULL;
+	TTF_CloseFont(fonty);
+	fonty = NULL;
 	SDL_DestroyTexture(volume_indicator); 
 	volume_indicator = NULL;
 	SDL_DestroyTexture(volume_bar);

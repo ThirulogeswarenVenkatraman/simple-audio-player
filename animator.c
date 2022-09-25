@@ -28,9 +28,12 @@ static SDL_Texture* Load_Textures(const char* filename, SDL_Renderer* main_rende
 	in_renderer = main_renderer;
 	SDL_Surface* temp_surface = IMG_Load(filename);
 	if (!temp_surface) {
-		throw_error("Load Error", SDL_GetError());
+		throw_error("Load Error", IMG_GetError());
 	}
 	temp_texture = SDL_CreateTextureFromSurface(main_renderer, temp_surface);
+	if (!temp_texture) {
+		throw_error("Texture Error", IMG_GetError());
+	}
 	SDL_FreeSurface(temp_surface);
 	return temp_texture;
 }

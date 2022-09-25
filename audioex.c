@@ -52,7 +52,11 @@ static void crop_filename(const char* fn) {
     while (*postr != '.') {
         postr++;
     }
+#ifdef WIN32
     for (i = 0; *postr != '\\'; i++, postr--) {
+#else
+    for (i = 0; *postr != '/'; i++, postr--) {
+#endif // !
         buff[i] = *postr;
     } buff[i] = '\0';
 
@@ -66,8 +70,7 @@ void load_header(const char* filename) {
     if (header != NULL) {
         header->_music = Mix_LoadMUS(filename);
         if (!header->_music) {
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING,
-                "invalid filename", filename, NULL);
+            throw_warning("Invalid filename", SDL_GetError());
             free(header);
             header = NULL;
         }
@@ -83,7 +86,7 @@ void load_header(const char* filename) {
         }
     }
     else {
-        throw_warning("Allocation Error", filename);
+        throw_warning("Allocation Error", SDL_GetError());
         header = NULL;
     }
 
@@ -95,8 +98,7 @@ void load_at_last(const char* filename) {
     if (new_node != NULL) {
         new_node->_music = Mix_LoadMUS(filename);
         if (!new_node->_music) {
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING,
-                "invalid filename", filename, NULL);
+            throw_warning("Invalid filename", SDL_GetError());
             free(new_node);
             new_node = NULL;
         }
@@ -121,7 +123,7 @@ void load_at_last(const char* filename) {
         }
     }
     else {
-        throw_warning("Allocation Error", filename);
+        throw_warning("Allocation Error", SDL_GetError());
         new_node = NULL;
     }
 }

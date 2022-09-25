@@ -10,9 +10,8 @@ static HHOOK kbd;
 
 #include "SDL2/SDL.h"
 
-static SDL_bool state;
+int InitSystem();
 
-SDL_bool InitSystem();
 void Update();
 void EvntHandler();
 void Render();
