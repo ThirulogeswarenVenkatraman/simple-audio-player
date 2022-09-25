@@ -28,4 +28,28 @@ then run the following to build the project
 ```shell
 cmake --build . --config Release
 ```
+## Building for Linux
 
+### On Debian/Ubuntu
+
+```shell
+sudo apt install gcc make libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-ttf-2.0-0 
+```
+you need the latest version of [sdl-mixer](https://github.com/libsdl-org/SDL_mixer)
+
+```shell
+git clone https://github.com/libsdl-org/SDL_mixer
+./configure
+make
+sudo make install
+```
+### On Arch
+```
+pacman -S sdl2 sdl2_image sdl2_mixer sdl2_ttf
+```
+after installing dependencies, clone the repository
+```shell
+git clone https://github.com/ThirulogeswarenVenkatraman/simple-audio-player.git
+cd simple-audio-player
+```
+from the cloned repository, run `ccmp.bash` to compile and link simple-audio-player
