@@ -44,7 +44,6 @@ void default_location() {
 #endif
 		if (ent->d_type != DT_DIR) {
 			SDL_strlcat(fullpath, ent->d_name, 60);
-			fprintf(stdout, "%s \n", fullpath);
 			drop_file(fullpath);
 		}
 	}

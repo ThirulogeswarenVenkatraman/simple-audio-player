@@ -43,7 +43,6 @@ void update_music_bar() {
 		_live_pos = dyn_bar_pos();
 		if (_live_pos == 0) { prev = 0; _music_bar.w = 0.0f; }
 		if (prev < _live_pos) {
-			SDL_Log("%d", bar_addr);
 			_music_bar.w += bar_addr;
 			prev = _live_pos;
 		}

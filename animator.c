@@ -13,7 +13,6 @@ extern void throw_error(const char* title, const char* errmsg);
 static SDL_Texture* _rewind = NULL;
 static SDL_Texture* _play = NULL;
 static SDL_Texture* _forward = NULL;
-static SDL_Texture* _stop = NULL;
 static SDL_Texture* _clearqueue = NULL;
 
 /* font textures */

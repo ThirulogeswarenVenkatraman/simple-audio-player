@@ -106,7 +106,6 @@ static void drop_handler(const char* _dirname) {
         if (ent->d_type != DT_DIR) {
             SDL_strlcat(fullpath, dirpath, 100); // add the dir
             SDL_strlcat(fullpath, ent->d_name, 100); // and the name
-            fprintf(stdout, "%s \n", fullpath);
             drop_file(fullpath);
         }
     }
