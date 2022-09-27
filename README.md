@@ -57,3 +57,24 @@ git clone https://github.com/ThirulogeswarenVenkatraman/simple-audio-player.git
 cd simple-audio-player
 ```
 from the cloned repository, run `ccmp.bash` to build the project
+
+## Building for MacOS
+you need to install [homebrew](https://brew.sh) to get the following dependencies
+```shell
+brew install make cmake sdl2 sdl2_image sdl2_mixer sdl2_ttf
+```
+then clone the repository and enter the cloned repository 
+```shell
+git clone https://github.com/ThirulogeswarenVenkatraman/simple-audio-player.git
+cd simple-audio-player
+```
+create a directory named ``build`` inside the base folder containing CMakeLists.txt
+```shell
+mkdir build
+cd build
+```
+from newly created ``build`` directory, run: ``cmake ..`` to generate build files  
+then run the following to build the project
+```shell
+cmake --build .
+```
