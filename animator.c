@@ -66,7 +66,7 @@ static TTF_Font* fonty_music_intel = NULL;
 static void load_the_fonts(const char* filename) {
 	fonty_music_dur = TTF_OpenFont(filename, 16);
 	fonty_music_intel = TTF_OpenFont(filename, 23);
-	if(!(fonty_music_dur || fonty_music_intel)) {
+	if((!fonty_music_dur) || (!fonty_music_intel)) {
 		throw_error("invalid font", TTF_GetError());
 	}
 }

@@ -4,9 +4,9 @@
 #include "include/globals.h"
 
 #ifdef WIN32   
-#define c_strdup _strdup
+#define c_strdup(str) _strdup(str)
 #else
-#define c_strdup strdup
+#define c_strdup(str) strdup(str)
 #endif /* native call */
 
 extern int music_state;
@@ -45,23 +45,22 @@ SDL_bool isHeaderEmpty() {
     return (header == NULL ? SDL_TRUE : SDL_FALSE);
 }
 
-static char in_filename[100];
+static char buffer[256];
 static void crop_filename(const char* fn) {
-    char buff[100]; int i;
-    const char* postr = fn;
-    while (*postr != '.') {
-        postr++;
+    static int i;
+    SDL_zero(buffer);
+    while (*fn != '.') {
+        fn++;
     }
 #ifdef WIN32
-    for (i = 0; *postr != '\\'; i++, postr--) {
+    for (i = 0; *fn != '\\'; i++, fn--) {
 #else
-    for (i = 0; *postr != '/'; i++, postr--) {
+    for (i = 0; *fn != '/'; i++, fn--) {
 #endif // !
-        buff[i] = *postr;
-    } buff[i] = '\0';
-
-    SDL_strrev(buff);
-    SDL_strlcpy(in_filename, buff, 100);
+        buffer[i] = *fn;
+    } buffer[i] = '\0';
+    
+    SDL_strrev(buffer);
 }
 
 void load_header(const char* filename) {
@@ -78,7 +77,7 @@ void load_header(const char* filename) {
             header->prev = NULL;
             header->title = NULL;
             crop_filename(filename);
-            header->title = c_strdup(in_filename);
+            header->title = c_strdup(buffer);
             header->mus_duration = (int)(Mix_MusicDuration(header->_music));
             header->next = NULL;
             current = header;
@@ -109,7 +108,7 @@ void load_at_last(const char* filename) {
             new_node->prev = tempo;
             new_node->title = NULL;
             crop_filename(filename);
-            new_node->title = c_strdup(in_filename);
+            new_node->title = c_strdup(buffer);
             new_node->mus_duration = (int)(Mix_MusicDuration(new_node->_music));
             new_node->next = NULL;
             tempo = header;

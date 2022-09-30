@@ -72,22 +72,19 @@ static void set_win_icon() {
 
 }
 
-void drop_file(const char* _filename) {
-    if (isHeaderEmpty()) {
-        load_header(_filename);
-    }
-    else {
-        load_at_last(_filename);
-    }
-}
-
 static void drop_handler(const char* _dirname) {
     DIR* dir = opendir(_dirname);
     if (!dir) {
-        drop_file(_dirname);
+        if (isHeaderEmpty()) {
+            load_header(_dirname);
+        }
+        else {
+            load_at_last(_dirname);
+        }
         return;
     }
-    char dirpath[100]; int i;
+    static char dirpath[100]; int i;
+    SDL_zero(dirpath);
     for (i = 0; *_dirname != '\0'; i++) {
         dirpath[i] = *_dirname;
         _dirname++;
@@ -99,14 +96,19 @@ static void drop_handler(const char* _dirname) {
 #endif 
     dirpath[i + 1] = '\0';
     /* got the dir-path */
-    struct dirent* ent;
-    char fullpath[100];
+    char fullpath[256];
+    struct dirent* ent = NULL;
     while ((ent = readdir(dir)) != NULL) {
         SDL_zero(fullpath);
         if (ent->d_type != DT_DIR) {
-            SDL_strlcat(fullpath, dirpath, 100); // add the dir
-            SDL_strlcat(fullpath, ent->d_name, 100); // and the name
-            drop_file(fullpath);
+            SDL_strlcat(fullpath, dirpath, sizeof(fullpath)); // add the dir
+            SDL_strlcat(fullpath, ent->d_name, sizeof(fullpath)); // and the name
+            if (isHeaderEmpty()) {
+                load_header(fullpath);
+            }
+            else {
+                load_at_last(fullpath);
+            }
         }
     }
     closedir(dir);
@@ -120,7 +122,7 @@ int InitSystem() {
         exit(-1);
     }
     window = SDL_CreateWindow("SMP", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-    WINDOW_SCREEN_X, WINDOW_SCREEN_Y, 0);
+    WINDOW_SCREEN_X, WINDOW_SCREEN_Y, SDL_WINDOW_HIDDEN);
 
     if(!window) {
         fprintf(stderr, "Window Creation Failed: %s", SDL_GetError());
@@ -160,7 +162,7 @@ int InitSystem() {
 #ifdef WIN32
     kbd = SetWindowsHookEx(WH_KEYBOARD_LL, &outMultiMediaKeys, 0, 0);
 #endif 
-
+    SDL_ShowWindow(window);
     /* Open Audio Device */
     InitAudioDevice();
 
