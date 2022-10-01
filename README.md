@@ -35,7 +35,7 @@ make sure to place the `assets\` folder and required DLLs inside the folder cont
 
 #### On Debian/Ubuntu
 ```shell
-sudo apt install gcc make libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-ttf-2.0-0 
+sudo apt install gcc libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev
 ```
 you need the latest version of [sdl-mixer](https://github.com/libsdl-org/SDL_mixer)
 
@@ -45,6 +45,10 @@ cd SDL_mixer
 ./configure
 make
 sudo make install
+```
+then add the following line to ``.bashrc`` located in your home folder ``/home/username``
+```shell
+export LD_LIBRARY_PATH=/usr/local/lib/
 ```
 #### On Arch
 ```shell
