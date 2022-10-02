@@ -8,10 +8,13 @@ a retro-style audio player written in **C** and **SDL**
   - default location (bin/music/)
 
 ## Building for Windows
-
-To compile simple-audio-player
-  - install [CMake](https://cmake.org/download/)
-  - install [Visual Studio 2022](https://visualstudio.microsoft.com/) (MinGW not supported)
+you need to install [vcpkg](https://vcpkg.io/en/getting-started.html) to get the following dependencies
+```shell
+.\vcpkg install sdl2:x64-windows sdl2-image:x64-windows sdl2-mixer:x64-windows sdl2-ttf:x64-windows
+```
+to compile the project, you need to install 
+  - [CMake](https://cmake.org/download/) and 
+  - [Visual Studio 2022](https://visualstudio.microsoft.com/) (MinGW not supported)
 
 clone the repository and enter the cloned repository
 ```shell
@@ -23,8 +26,10 @@ create a directory named ``build`` inside the base folder containing CMakeLists.
 mkdir build
 cd build 
 ```
-from newly created ``build`` directory, run: ``cmake ..`` to generate platform specific build files
-
+from newly created ``build`` directory, run the following to generate VS build files
+```shell
+cmake .. -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake
+``` 
 then run the following to build the project
 ```shell
 cmake --build . --config Release
