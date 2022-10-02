@@ -1,12 +1,10 @@
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.20.0)
 
 project(simple-audio-player LANGUAGES C)
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
-
-include_directories(${CMAKE_SOURCE_DIR}/deps/includes)
 
 if(MSVC)
     add_compile_options(/W4)
@@ -15,11 +13,18 @@ else()
 endif()
 
 if(WIN32 AND MSVC)
+    find_package(SDL2 CONFIG REQUIRED)
+    find_package(sdl2-image CONFIG REQUIRED)
+    find_package(SDL2_mixer CONFIG REQUIRED)
+    find_package(SDL2_ttf CONFIG REQUIRED)
+    
     add_executable(${PROJECT_NAME} main.c smp.c animator.c audiomanager.c audioex.c musicbar.c volumebar.c globals.c)
-
     set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
-    target_link_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/deps/libs)
-    target_link_libraries(${PROJECT_NAME} SDL2main.lib SDL2.lib SDL2_mixer.lib SDL2_image.lib SDL2_ttf.lib)
+
+    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2 SDL2::SDL2main SDL2::SDL2_image
+    $<IF:$<TARGET_EXISTS:SDL2_mixer::SDL2_mixer>,SDL2_mixer::SDL2_mixer,SDL2_mixer::SDL2_mixer-static>
+    $<IF:$<TARGET_EXISTS:SDL2_ttf::SDL2_ttf>,SDL2_ttf::SDL2_ttf,SDL2_ttf::SDL2_ttf-static> 
+    )
 endif(WIN32 AND MSVC)
 
 if(APPLE)

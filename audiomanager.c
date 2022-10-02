@@ -1,7 +1,7 @@
 #include "include/audiomanager.h"
 
 #ifdef WIN32
-#include "SDL2/dirent.h"
+#include "include/dirent.h"
 #else
 #include "dirent.h"
 #endif

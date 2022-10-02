@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 #ifdef WIN32
-#include "SDL2/dirent.h"
+#include "include/dirent.h"
 #else
 #include "dirent.h"
 #endif
@@ -116,7 +116,7 @@ static void drop_handler(const char* _dirname) {
 
 int InitSystem() {
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
-        fprintf(stderr, "Init Failed: %s", SDL_GetError());
+        fprintf(stderr, "Init Failed: %s\n", SDL_GetError());
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Init Failed", SDL_GetError(), NULL);
         SDL_Quit();
         exit(-1);
@@ -125,7 +125,7 @@ int InitSystem() {
     WINDOW_SCREEN_X, WINDOW_SCREEN_Y, SDL_WINDOW_HIDDEN);
 
     if(!window) {
-        fprintf(stderr, "Window Creation Failed: %s", SDL_GetError());
+        fprintf(stderr, "Window Creation Failed: %s\n", SDL_GetError());
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Window Creation Failed", SDL_GetError(), NULL);
         SDL_Quit();
         exit(-1);
@@ -134,7 +134,7 @@ int InitSystem() {
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
     if(!renderer) {
-        fprintf(stderr, "Renderer Failed: %s", SDL_GetError());
+        fprintf(stderr, "Renderer Failed: %s\n", SDL_GetError());
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Renderer Failed", SDL_GetError(), NULL);
         if (window != NULL) {
             SDL_DestroyWindow(window);
@@ -145,7 +145,7 @@ int InitSystem() {
     }
     
     if(TTF_Init()) { /* returns 0 on success */
-        fprintf(stderr, "TTF Failed: %s", SDL_GetError());
+        fprintf(stderr, "TTF Failed: %s\n", SDL_GetError());
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "TTF Failed", SDL_GetError(), window);
         if (renderer != NULL) {
             SDL_DestroyRenderer(renderer);
