@@ -6,6 +6,7 @@
 
 /* externals */
 extern int music_state;
+extern int isMouseDown;
 extern const char* active_title;
 extern void throw_error(const char* title, const char* errmsg);
 
@@ -81,8 +82,8 @@ void load_music_intels(int _duration) {
 	SDL_Surface* temp_surf_duration = TTF_RenderText_Solid(fonty_music_dur, outdur, (SDL_Color) { 58, 68, 102, 255 });
 	SDL_Surface* temp_surf_music_intel = TTF_RenderText_Solid(fonty_music_intel, active_title, (SDL_Color) { 58, 68, 102, 255 });
 	/* destination */
-	mus_dur_Dest = (SDL_Rect){ 286, 136, temp_surf_duration->w, temp_surf_duration->h };
-	mus_intel_Dest = (SDL_Rect){ 30, 60, temp_surf_music_intel->w, temp_surf_music_intel->h };
+	mus_dur_Dest = (SDL_Rect){ 286, 118, temp_surf_duration->w, temp_surf_duration->h };
+	mus_intel_Dest = (SDL_Rect){ 30, 42, temp_surf_music_intel->w, temp_surf_music_intel->h };
 	/* set the textures -> dynamic textures */
 	_fmus_duration = SDL_CreateTextureFromSurface(in_renderer, temp_surf_duration);
 	_mus_intels = SDL_CreateTextureFromSurface(in_renderer, temp_surf_music_intel);
@@ -141,21 +142,19 @@ void Free_Texture() {
 }
 
 static SDL_Point mousepointer;
-void animation_states(SDL_Event _evnt) {
+void animation_states() {
 	SDL_GetMouseState(&mousepointer.x, &mousepointer.y);
 	if (SDL_PointInRect(&mousepointer, &playDest)) { /* play_n_pause */
 		if (music_state) {
 			play_src.x = 16;
-			if (_evnt.button.state == SDL_PRESSED &&
-				_evnt.button.button == SDL_BUTTON_LEFT) {
+			if (isMouseDown) {
 				play_src.x = 32;
 			}
 			else { play_src.x = 16; }
 		}
 		else {
 			play_src.x = 64;
-			if (_evnt.button.state == SDL_PRESSED &&
-				_evnt.button.button == SDL_BUTTON_LEFT) {
+			if (isMouseDown) {
 				play_src.x = 80;
 			}
 			else { play_src.x = 64; }
@@ -163,24 +162,21 @@ void animation_states(SDL_Event _evnt) {
 	}
 	else if (SDL_PointInRect(&mousepointer, &forwardDest)) { /* forward */
 		forward_src.x = 22;
-		if (_evnt.button.state == SDL_PRESSED &&
-			_evnt.button.button == SDL_BUTTON_LEFT) {
+		if (isMouseDown) {
 			forward_src.x = 44;
 		}
 		else { forward_src.x = 22; }
 	}
 	else if (SDL_PointInRect(&mousepointer, &rewindDest)) { /* rewind */
 		rewind_src.x = 22;
-		if (_evnt.button.state == SDL_PRESSED &&
-			_evnt.button.button == SDL_BUTTON_LEFT) {
+		if (isMouseDown) {
 			rewind_src.x = 44;
 		}
 		else { rewind_src.x = 22; }
 	}
 	else if (SDL_PointInRect(&mousepointer, &cqDest)) { /* clear_queue */
 		clear_src.x = 16;
-		if (_evnt.button.state == SDL_PRESSED &&
-			_evnt.button.button == SDL_BUTTON_LEFT) {
+		if (isMouseDown) {
 			clear_src.x = 32;
 		}
 		else { clear_src.x = 16; }

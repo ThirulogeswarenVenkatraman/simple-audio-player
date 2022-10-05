@@ -61,6 +61,7 @@ static void crop_filename(const char* fn) {
     } buffer[i] = '\0';
     
     SDL_strrev(buffer);
+    buffer[26] = '\0';
 }
 
 void load_header(const char* filename) {

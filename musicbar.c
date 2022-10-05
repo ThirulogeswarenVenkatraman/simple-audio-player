@@ -10,10 +10,10 @@ extern void throw_error(const char* title, const char* errmsg);
 
 static int _live_pos;
 static SDL_Rect bar_src = { 0, 0, 36, 3 }; // static 
-const SDL_Rect bar_dst = { 28, 139, 252, 12 }; /* bar */
+const SDL_Rect bar_dst = { 28, 121, 252, 12 }; /* bar */
 /* music bar dynamic */
-SDL_Rect changer_bar = { 31, 139, 243, 12 };
-SDL_FRect _music_bar = { 31.0f, 143.0f, 0.0f, 4.0f };
+SDL_Rect changer_bar = { 31, 121, 243, 12 };
+SDL_FRect _music_bar = { 31.0f, 125.0f, 0.0f, 4.0f };
 
 static SDL_Texture* _bar = NULL;
 
@@ -51,13 +51,18 @@ void update_music_bar() {
 
 void set_music_position_c() {
 	static SDL_Point mouse_pos;
+	static int from_bar;
 	int temp_prev = 0;
 	double temp_live_pos = 0.0f;
 	float accumulator = 0.0f;
 	SDL_GetMouseState(&mouse_pos.x, &mouse_pos.y);
-	if (SDL_PointInRect(&mouse_pos, &changer_bar) && bar_addr) {
-		static int from_bar;
-		from_bar = mouse_pos.x - changer_bar.x;
+	from_bar = mouse_pos.x - changer_bar.x;
+	if (SDL_PointInRect(&mouse_pos, &bar_dst) && from_bar < 5) {
+		temp_live_pos = 0.0f;
+		_music_bar.w = 0.0f;
+		Mix_SetMusicPosition(temp_live_pos);
+	}
+	else if (SDL_PointInRect(&mouse_pos, &changer_bar) && bar_addr) {
 		for (float from = 0.0f, till = (float)from_bar;
 			from < till; from += bar_addr) { /* respect to musicbar <rect> */
 			accumulator += bar_addr;

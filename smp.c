@@ -4,8 +4,6 @@
 #include "include/volumebar.h"
 #include "include/musicbar.h"
 
-#include <stdio.h>
-
 #ifdef WIN32
 #include "include/dirent.h"
 #else
@@ -13,13 +11,16 @@
 #endif
 
 /* window props */
-#define WINDOW_SCREEN_X 480
-#define WINDOW_SCREEN_Y 240
+#define WINDOW_SCREEN_X 444
+#define WINDOW_SCREEN_Y 222
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static const Uint8* KeyStates = NULL;
 static SDL_Event evnt;
+
+static int isMouseInside = 0;
+int isMouseDown = 0;
 
 void throw_error(const char* title, const char* errmsg);
 void throw_warning(const char* title, const char* errmsg);
@@ -41,7 +42,7 @@ LRESULT CALLBACK outMultiMediaKeys(int nCode, WPARAM wParam, LPARAM lParam) {
             break;
         }
         default: {
-            animation_states(evnt);
+            animation_states();
             break;
         }
     }
@@ -58,18 +59,6 @@ int isKeyDown(SDL_Scancode key) {
         else { return 0; }
     }
     return 0;
-}
-
-static void set_win_icon() {
-    SDL_Surface* win_icon = NULL;
-    win_icon = IMG_Load("assets/icon.png");
-    if (!win_icon) {
-        throw_error("Load Error", SDL_GetError());
-    }
-    SDL_SetWindowIcon(window, win_icon);
-    SDL_FreeSurface(win_icon);
-    win_icon = NULL;
-
 }
 
 static void drop_handler(const char* _dirname) {
@@ -130,7 +119,6 @@ int InitSystem() {
         SDL_Quit();
         exit(-1);
     }
-    set_win_icon();
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
     if(!renderer) {
@@ -176,13 +164,16 @@ int InitSystem() {
 }
 
 void Update() {
+    animation_states();
     update_music_bar();
     audioex_updator();
     if (isKeyDown(SDL_SCANCODE_ESCAPE)) {
         FreeResources();
         exit(0);
     }
-
+    if (isMouseDown) {
+        update_volume();
+    }
 }
 
 void EvntHandler() {
@@ -218,13 +209,18 @@ void EvntHandler() {
                     current_next_music(0);
                     clear_audio_queue();
 
-                    update_volume();
                     set_music_position_c();
+                    isMouseDown = 1;
                 }
+                break;
             }
-            /* dont break the case */
+            case SDL_MOUSEBUTTONUP: {
+                if (evnt.button.state == SDL_RELEASED) {
+                    isMouseDown = 0;
+                }
+                break;
+            }
             default: {
-                animation_states(evnt);
                 break;
             }
         }
