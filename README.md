@@ -1,5 +1,5 @@
 # simple-audio-player
-a retro-style audio player written in **C** and **SDL**
+a retro-style audio player written in **C** using **SDL2**
 
 ### Features
   - supports mp3, wav, ogg
